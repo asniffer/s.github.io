@@ -13,6 +13,8 @@
         #lock-screen { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 9999; }
         .glass-card { background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
         input, select, textarea { font-size: 16px !important; outline: none; }
+        /* 核心修复：CSS层面强制大写 */
+        #f_symbol.uppercase-input { text-transform: uppercase; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .th-label { color: #1e40af; font-weight: 800; letter-spacing: 0.05em; }
     </style>
@@ -121,7 +123,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <input id="f_name" type="text" class="bg-slate-50 p-4 rounded-2xl font-bold" placeholder="标的名称">
-                    <input id="f_symbol" type="text" oninput="validateSymbol(this)" class="bg-slate-50 p-4 rounded-2xl font-normal text-slate-800" placeholder="股票代码">
+                    <input id="f_symbol" type="text" oninput="handleSymbolInput(this)" class="bg-slate-50 p-4 rounded-2xl font-normal text-slate-800 uppercase-input" placeholder="股票代码">
                 </div>
                 <div class="grid grid-cols-3 gap-3">
                     <input id="f_date" type="date" class="bg-slate-50 p-4 rounded-2xl text-[10px] font-bold">
@@ -145,7 +147,6 @@
         let appData = { records: [] };
         let currentStatusFilter = 'all';
 
-        // 核心登录
         function checkPassword() {
             if (document.getElementById('access-pwd').value.trim() === _PASS) {
                 document.getElementById('lock-screen').classList.add('hidden');
@@ -157,7 +158,6 @@
             }
         }
 
-        // 云端同步逻辑
         async function loadFromCloud() {
             updateUIStatus('syncing', '连接中...');
             try {
@@ -192,16 +192,35 @@
             if(type === 'error') { dot.className = "w-2 h-2 rounded-full mr-2 bg-red-500"; statusText.className = "text-[11px] font-bold text-red-500 uppercase tracking-widest"; }
         }
 
-        // 股票代码输入限制逻辑
-        function validateSymbol(el) {
+        // 核心修复：更强的输入处理函数
+        function handleSymbolInput(el) {
             const market = document.getElementById('f_market').value;
+            let val = el.value;
+            
             if (market === 'A股' || market === '港股') {
-                el.value = el.value.replace(/[^\d]/g, ''); // 只能输入数字
-                el.inputMode = 'numeric';
+                // A股/港股：只留数字
+                el.value = val.replace(/[^\d]/g, '');
             } else {
-                el.value = el.value.toUpperCase(); // 美股自动转大写
-                el.inputMode = 'text';
+                // 美股/期权：强制大写，移除空格等非法字符
+                el.value = val.toUpperCase().replace(/\s/g, '');
             }
+        }
+
+        function onMarketChange() {
+            const m = document.getElementById('f_market').value;
+            document.getElementById('opt_tag').classList.toggle('hidden', m !== "美股期权");
+            const symInput = document.getElementById('f_symbol');
+            
+            // 切换市场时重置键盘模式
+            if (m === 'A股' || m === '港股') {
+                symInput.setAttribute('inputmode', 'numeric');
+                symInput.placeholder = "仅限数字";
+            } else {
+                symInput.setAttribute('inputmode', 'text');
+                symInput.placeholder = "股票代码";
+            }
+            symInput.value = ""; 
+            calcTotal();
         }
 
         function renderTable() {
@@ -261,16 +280,6 @@
                 </tr>`).join('');
         }
 
-        // 辅助逻辑
-        function onMarketChange() {
-            const m = document.getElementById('f_market').value;
-            document.getElementById('opt_tag').classList.toggle('hidden', m !== "美股期权");
-            const symInput = document.getElementById('f_symbol');
-            symInput.value = ""; // 切换市场清空代码，防止校验冲突
-            symInput.placeholder = (m === 'A股' || m === '港股') ? "仅数字" : "股票代码";
-            calcTotal();
-        }
-
         function calcTotal() {
             const p = parseFloat(document.getElementById('f_price').value) || 0;
             const q = parseFloat(document.getElementById('f_quantity').value) || 0;
@@ -288,6 +297,7 @@
 
         function openModal() {
             document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modalTitle').innerText = "新建交易计划";
             document.getElementById('f_id').value = "";
             document.getElementById('f_date').value = getTomorrow();
             onMarketChange();
