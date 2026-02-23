@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小G交易助手-Cloud Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        #lock-screen { backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
+        .active-filter-all { border-bottom: 4px solid #64748b !important; background-color: #f8fafc; }
+        .active-filter-success { border-bottom: 4px solid #10b981 !important; background-color: #ecfdf5; }
+        .active-filter-fail { border-bottom: 4px solid #ef4444 !important; background-color: #fef2f2; }
+        .active-filter-pending { border-bottom: 4px solid #f59e0b !important; background-color: #fffbeb; }
+        .btn-active:active { transform: scale(0.95); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen antialiased text-gray-900">
+    <div id="lock-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
+            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
+                <i class="fa fa-lock text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">安全验证</h2>
+            <p class="text-gray-400 text-sm mb-6">请输入您的访问密码</p>
+            <input type="password" id="access-pwd" class="w-full border-2 border-gray-100 rounded-2xl p-4 mb-4 text-center text-3xl outline-none focus:border-blue-500 transition-all" placeholder="····">
+            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg btn-active">开启助手</button>
+            <p id="pwd-error" class="text-red-500 text-sm mt-4 hidden">密码有误，请重试</p>
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 max-w-6xl mx-auto p-4 sm:p-8">
+        <header class="flex flex-col sm:flex-row justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border-l-[6px] border-blue-600 gap-6">
+            <div class="text-center sm:text-left">
+                <h1 class="text-2xl font-extrabold flex items-center justify-center sm:justify-start">
+                    <i class="fa fa-line-chart mr-3 text-blue-600"></i>交易复盘助手
+                </h1>
+                <div class="flex items-center mt-2 justify-center sm:justify-start">
+                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-gray-300 mr-2"></span>
+                    <p class="text-xs text-gray-400 font-medium" id="sync-status">等待验证...</p>
+                </div>
+            </div>
+            <button onclick="openModal()" class="w-full sm:w-auto bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold btn-active shadow-lg shadow-blue-100">
+                <i class="fa fa-plus-circle mr-2"></i>制定新计划
+            </button>
+        </header>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+            <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer active-filter-all">
+                <div class="text-gray-400 text-[10px] font-bold uppercase">总计划</div>
+                <div id="stat-total" class="text-2xl font-black mt-1">0</div>
+            </div>
+            <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
+                <div class="text-emerald-500 text-[10px] font-bold uppercase">成功</div>
+                <div id="stat-success" class="text-2xl font-black text-emerald-500 mt-1">0</div>
+            </div>
+            <div onclick="setQuickFilter('fail')" id="card-fail" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
+                <div class="text-red-500 text-[10px] font-bold uppercase">失败</div>
+                <div id="stat-fail" class="text-2xl font-black text-red-500 mt-1">0</div>
+            </div>
+            <div onclick="setQuickFilter('pending')" id="card-pending" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
+                <div class="text-amber-500 text-[10px] font-bold uppercase">待处理</div>
+                <div id="stat-pending" class="text-2xl font-black text-amber-500 mt-1">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-600 col-span-2 md:col-span-1">
+                <div class="text-blue-600 text-[10px] font-bold uppercase">成功总额</div>
+                <div id="stat-amount" class="text-xl font-black text-blue-600 mt-1 truncate">￥0</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b flex flex-wrap gap-3 items-center justify-between bg-gray-50/30">
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <input type="date" id="filter-date" onchange="renderTable()" class="flex-1 border rounded-xl px-4 py-2 text-sm outline-none">
+                    <select id="filter-market" onchange="renderTable()" class="flex-1 border rounded-xl px-4 py-2 text-sm outline-none">
+                        <option value="all">全市场</option>
+                        <option value="美股">美股</option>
+                        <option value="美股期权">美股期权</option>
+                        <option value="港股">港股</option>
+                        <option value="A股">A股</option>
+                    </select>
+                </div>
+                <button onclick="resetFilter()" class="text-xs font-bold text-blue-500">清空筛选</button>
+            </div>
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="w-full text-left min-w-[750px]">
+                    <thead class="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase">
+                        <tr>
+                            <th class="px-6 py-4">日期</th>
+                            <th class="px-6 py-4">标的/代码</th>
+                            <th class="px-6 py-4">市场/方向</th>
+                            <th class="px-6 py-4">价格x数量</th>
+                            <th class="px-6 py-4">计划金额</th>
+                            <th class="px-6 py-4 text-center">状态操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable" class="divide-y divide-gray-50"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-8 overflow-y-auto max-h-[90vh] modal-animate">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">制定计划</h2>
+                <button onclick="closeModal()"><i class="fa fa-times-circle text-2xl text-gray-300"></i></button>
+            </div>
+            <input type="hidden" id="f_id">
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <select id="f_market" onchange="updateUI()" class="border rounded-2xl p-4 text-sm font-bold bg-gray-50">
+                    <option value="美股">美股</option>
+                    <option value="美股期权">美股期权</option>
+                    <option value="港股">港股</option>
+                    <option value="A股">A股</option>
+                </select>
+                <select id="f_direction" class="border rounded-2xl p-4 text-sm font-bold bg-gray-50">
+                    <option value="买入">买入</option>
+                    <option value="卖出">卖出</option>
+                </select>
+                <input id="f_symbol" type="text" class="border rounded-2xl p-4 text-sm font-mono" placeholder="代码 (如 AAPL)">
+                <input id="f_name" type="text" class="border rounded-2xl p-4 text-sm" placeholder="名称 (如 苹果股票)">
+                <input id="f_date" type="date" class="border rounded-2xl p-4 text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="border rounded-2xl p-4 text-sm" placeholder="价格">
+                    <input id="f_quantity" type="number" oninput="calcTotal()" class="border rounded-2xl p-4 text-sm" placeholder="数量">
+                </div>
+            </div>
+            <div class="bg-blue-600 rounded-3xl p-6 flex justify-between items-center mb-6 text-white font-bold">
+                <div class="text-xs opacity-70 uppercase tracking-widest">预估总额 <span id="opt_tag" class="hidden text-[10px] bg-white/20 px-1 rounded ml-1">x100</span></div>
+                <div id="f_total_display" class="text-2xl font-mono">￥ 0.00</div>
+            </div>
+            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="为什么买入/卖出？"></textarea>
+            <button onclick="submitForm()" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg btn-active">保存计划并同步云端</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 参数注入 =================
+        const CONFIG = {
+            BIN_ID: '699bba17ae596e708f40f47e', 
+            MASTER_KEY: '$2a$10$6.X9SFXrgyQPaWMEYe5Eeu8G73g36QEs4BKZhH4hm0TS4Wfnd8ElC',
+            ACCESS_PWD: '8888'
+        };
+
+        let appData = { records: [] };
+        let currentStatusFilter = 'all';
+
+        // 核心 JS 逻辑
+        function checkPassword() {
+            if(document.getElementById('access-pwd').value === CONFIG.ACCESS_PWD) {
+                document.getElementById('lock-screen').classList.add('hidden');
+                const main = document.getElementById('main-content');
+                main.classList.remove('hidden');
+                setTimeout(() => main.classList.add('opacity-100'), 50);
+                loadFromCloud();
+            } else {
+                document.getElementById('pwd-error').classList.remove('hidden');
+            }
+        }
+
+        async function loadFromCloud() {
+            updateSyncStatus('syncing', '正在拉取云端数据...');
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
+                });
+                const json = await res.json();
+                appData = json.record || { records: [] };
+                renderTable();
+                updateSyncStatus('success', '云端已同步');
+            } catch (e) { updateSyncStatus('error', '同步失败'); }
+        }
+
+        async function saveToCloud() {
+            updateSyncStatus('syncing', '正在推送到云端...');
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': CONFIG.MASTER_KEY },
+                    body: JSON.stringify(appData)
+                });
+                updateSyncStatus('success', '云端存取成功');
+            } catch (e) { alert('同步失败，请检查网络'); }
+        }
+
+        function updateSyncStatus(type, text) {
+            const dot = document.getElementById('sync-dot');
+            document.getElementById('sync-status').innerText = text;
+            dot.className = "w-2 h-2 rounded-full mr-2 " + (type==='syncing'?'bg-blue-400 animate-pulse':(type==='success'?'bg-emerald-500':'bg-red-500'));
+        }
+
+        function calcTotal() {
+            const p = parseFloat(document.getElementById('f_price').value) || 0;
+            const q = parseFloat(document.getElementById('f_quantity').value) || 0;
+            let total = p * q;
+            if (document.getElementById('f_market').value === "美股期权") total *= 100;
+            document.getElementById('f_total_display').innerText = '￥ ' + total.toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
+
+        function updateUI() {
+            document.getElementById('opt_tag').classList.toggle('hidden', document.getElementById('f_market').value !== "美股期权");
+            calcTotal();
+        }
+
+        async function submitForm() {
+            const id = document.getElementById('f_id').value;
+            const record = {
+                id: id ? parseInt(id) : Date.now(),
+                date: document.getElementById('f_date').value || new Date().toISOString().split('T')[0],
+                market: document.getElementById('f_market').value,
+                direction: document.getElementById('f_direction').value,
+                symbol: document.getElementById('f_symbol').value.toUpperCase(),
+                name: document.getElementById('f_name').value || '未命名',
+                price: parseFloat(document.getElementById('f_price').value || 0),
+                quantity: parseFloat(document.getElementById('f_quantity').value || 0),
+                note: document.getElementById('f_note').value || '',
+                status: id ? appData.records.find(r => r.id == id).status : 'pending'
+            };
+            record.totalAmount = record.price * record.quantity * (record.market === '美股期权' ? 100 : 1);
+
+            if(id) {
+                const idx = appData.records.findIndex(r => r.id == id);
+                appData.records[idx] = record;
+            } else {
+                appData.records.unshift(record);
+            }
+
+            closeModal();
+            renderTable();
+            await saveToCloud();
+        }
+
+        function renderTable() {
+            const list = appData.records || [];
+            const fDate = document.getElementById('filter-date').value;
+            const fMarket = document.getElementById('filter-market').value;
+            const filtered = list.filter(i => (fDate ? i.date === fDate : true) && (fMarket === 'all' || i.market === fMarket) && (currentStatusFilter === 'all' || i.status === currentStatusFilter));
+
+            document.getElementById('stat-total').innerText = list.length;
+            document.getElementById('stat-success').innerText = list.filter(i => i.status === 'success').length;
+            document.getElementById('stat-fail').innerText = list.filter(i => i.status === 'fail').length;
+            document.getElementById('stat-pending').innerText = list.filter(i => i.status === 'pending').length;
+            const totalAmt = list.filter(i => i.status === 'success').reduce((a, b) => a + (b.totalAmount || 0), 0);
+            document.getElementById('stat-amount').innerText = '￥' + Math.floor(totalAmt).toLocaleString();
+
+            document.getElementById('dataTable').innerHTML = filtered.map(i => `
+                <tr class="hover:bg-gray-50/50 group transition-colors">
+                    <td class="px-6 py-5 text-[10px] text-gray-400 font-mono">${i.date}</td>
+                    <td class="px-6 py-5">
+                        <div class="font-bold text-gray-800">${i.name}</div>
+                        <div class="text-[10px] text-blue-500 font-black uppercase mt-0.5 tracking-wider">${i.symbol}</div>
+                    </td>
+                    <td class="px-6 py-5">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${i.direction==='买入'?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-600'}">${i.direction}</span>
+                        <div class="text-[9px] text-gray-300 mt-1 uppercase font-bold tracking-tighter">${i.market}</div>
+                    </td>
+                    <td class="px-6 py-5 text-xs font-bold text-gray-600">${i.price.toFixed(2)} x ${i.quantity}${i.market==='美股期权'?'<span class="text-blue-600 ml-1 italic font-black">x100</span>':''}</td>
+                    <td class="px-6 py-5 font-black text-gray-800">￥${(i.totalAmount||0).toLocaleString()}</td>
+                    <td class="px-6 py-5">
+                        <div class="flex flex-col items-center gap-2">
+                            ${i.status === 'pending' ? `
+                                <div class="flex gap-1.5">
+                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">成交</button>
+                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-red-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">失败</button>
+                                </div>
+                            ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-xs tracking-widest uppercase">● ${i.status==='success'?'成功':'失败'}</span>`}
+                            <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                                <i onclick="editItem(${i.id})" class="fa fa-pencil text-blue-400 cursor-pointer hover:text-blue-600"></i>
+                                <i onclick="deleteItem(${i.id})" class="fa fa-trash text-gray-300 hover:text-red-500 cursor-pointer"></i>
+                            </div>
+                        </div>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function updateStatus(id, s) {
+            const idx = appData.records.findIndex(r => r.id === id);
+            appData.records[idx].status = s;
+            renderTable();
+            await saveToCloud();
+        }
+
+        async function deleteItem(id) {
+            if(confirm('确定删除此交易计划？')) {
+                appData.records = appData.records.filter(r => r.id !== id);
+                renderTable();
+                await saveToCloud();
+            }
+        }
+
+        function editItem(id) {
+            const r = appData.records.find(r => r.id === id);
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('f_id').value = r.id;
+            document.getElementById('f_market').value = r.market;
+            document.getElementById('f_direction').value = r.direction;
+            document.getElementById('f_symbol').value = r.symbol;
+            document.getElementById('f_name').value = r.name;
+            document.getElementById('f_date').value = r.date;
+            document.getElementById('f_price').value = r.price;
+            document.getElementById('f_quantity').value = r.quantity;
+            document.getElementById('f_note').value = r.note;
+            updateUI();
+        }
+
+        function setQuickFilter(s) {
+            currentStatusFilter = s;
+            ['all', 'success', 'fail', 'pending'].forEach(c => {
+                document.getElementById('card-' + c).className = `bg-white p-4 rounded-2xl shadow-sm cursor-pointer transition-all ${s === c ? 'active-filter-' + c : ''}`;
+            });
+            renderTable();
+        }
+
+        function resetFilter() {
+            document.getElementById('filter-date').value = "";
+            document.getElementById('filter-market').value = "all";
+            setQuickFilter('all');
+        }
+
+        function openModal() {
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('f_id').value = "";
+            document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+            updateUI();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            ['f_symbol','f_name','f_price','f_quantity','f_note'].forEach(id => document.getElementById(id).value = '');
+        }
+    </script>
+</body>
+</html>
