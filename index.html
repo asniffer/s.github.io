@@ -4,196 +4,168 @@
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>小G交易助手-尊享版</title>
+    <title>交易计划</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
         :root { --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom); }
-        body { padding-top: var(--safe-top); padding-bottom: var(--safe-bottom); background: #f8fafc; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        #lock-screen { backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); z-index: 9999; }
-        
-        .glass-card { background: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
-        input, select, textarea { font-size: 16px !important; outline: none; border: 2px solid #f1f5f9; transition: all 0.2s; }
-        input:focus, select:focus { border-color: #3b82f6; background: #fff; }
-        
+        body { padding-top: var(--safe-top); padding-bottom: var(--safe-bottom); background: #f8fafc; font-family: "PingFang SC", sans-serif; -webkit-tap-highlight-color: transparent; }
+        #lock-screen { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 9999; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #fff; }
+        input, select, textarea { font-size: 16px !important; outline: none; transition: all 0.2s; }
+        .card-active { border-bottom: 4px solid #3b82f6 !important; background: #fff !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .shake { animation: shake 0.4s ease-in-out; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
-
-        /* 状态卡片激活效果 */
-        .card-active { border-bottom: 4px solid #3b82f6 !important; background: #fff !important; transform: translateY(-2px); }
+        .shake { animation: shake 0.4s ease-in-out; }
     </style>
 </head>
 
 <body class="text-slate-800 antialiased">
 
-    <div id="lock-screen" class="fixed inset-0 bg-white/90 flex items-center justify-center p-6">
+    <div id="lock-screen" class="fixed inset-0 bg-white/95 flex items-center justify-center p-6">
         <div id="pwd-panel" class="w-full max-w-sm text-center">
-            <div class="w-20 h-20 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-[2rem] shadow-2xl flex items-center justify-center mx-auto mb-10 shadow-blue-200">
-                <i class="fa fa-shield text-white text-3xl"></i>
+            <div class="w-20 h-20 bg-blue-600 rounded-[2rem] shadow-2xl flex items-center justify-center mx-auto mb-10 shadow-blue-200">
+                <i class="fa fa-unlock-alt text-white text-3xl"></i>
             </div>
-            <h2 class="text-3xl font-black mb-3 tracking-tight">小G助手</h2>
-            <p class="text-slate-400 text-sm mb-10 font-bold tracking-widest uppercase">请通过身份验证</p>
-            
-            <div class="space-y-4">
-                <input type="password" id="access-pwd" 
-                       class="w-full bg-slate-100 rounded-3xl p-6 text-center text-4xl font-black tracking-[0.6em]" 
-                       placeholder="••••••" inputmode="numeric">
-                <button onclick="checkPassword()" 
-                        class="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-xl shadow-2xl active:scale-95 transition-all">
-                    解锁加密云
-                </button>
-            </div>
-            <p id="pwd-error" class="text-red-500 text-sm mt-8 hidden font-black tracking-widest">验证未通过，请重试</p>
+            <h2 class="text-3xl font-black mb-10 tracking-tight">小G助手验证</h2>
+            <input type="password" id="access-pwd" 
+                   class="w-full bg-slate-100 rounded-3xl p-6 text-center text-4xl font-black tracking-[0.5em] mb-4" 
+                   placeholder="••••••" inputmode="numeric">
+            <button onclick="checkPassword()" class="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-xl shadow-xl active:scale-95 transition-all">进入系统</button>
+            <p id="pwd-error" class="text-red-500 text-sm mt-6 hidden font-bold">密码不正确，请重新输入</p>
         </div>
     </div>
 
-    <div id="main-content" class="hidden opacity-0 transition-opacity duration-1000 max-w-5xl mx-auto px-4 py-8">
+    <div id="main-content" class="hidden opacity-0 transition-opacity duration-700 max-w-5xl mx-auto px-4 py-8">
         <header class="flex justify-between items-center mb-10 px-2">
             <div>
-                <h1 class="text-2xl font-black italic tracking-tighter">TRADE<span class="text-blue-600">PRO</span></h1>
+                <h1 class="text-2xl font-black italic">小G<span class="text-blue-600">交易助手</span></h1>
                 <div class="flex items-center mt-2">
                     <div id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-slate-300 mr-2 border-2 border-white"></div>
-                    <span id="sync-status" class="text-[10px] text-slate-400 font-black uppercase tracking-widest font-mono">Standby</span>
+                    <span id="sync-status" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">初始化中</span>
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="toggleTools()" class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 border border-slate-50"><i class="fa fa-cloud-download"></i></button>
-                <button onclick="openModal()" class="h-12 px-6 rounded-2xl bg-blue-600 text-white font-black shadow-lg shadow-blue-100 active:scale-90 flex items-center">
-                    <i class="fa fa-plus-circle mr-2"></i>新建记录
-                </button>
+                <button onclick="toggleTools()" class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400"><i class="fa fa-cog"></i></button>
+                <button onclick="openModal()" class="h-12 px-6 rounded-2xl bg-blue-600 text-white font-black shadow-lg shadow-blue-100 active:scale-90 flex items-center"><i class="fa fa-plus-circle mr-2"></i>添加计划</button>
             </div>
         </header>
 
-        <div id="tool-box" class="hidden grid grid-cols-2 gap-4 mb-8 px-2 animate-fade-in">
-            <button onclick="exportData()" class="bg-white p-4 rounded-2xl border border-dashed border-slate-200 text-xs font-black text-slate-500">导出 Json 备份</button>
-            <label class="bg-white p-4 rounded-2xl border border-dashed border-slate-200 text-xs font-black text-slate-500 flex items-center justify-center cursor-pointer">
+        <div id="tool-box" class="hidden grid grid-cols-2 gap-4 mb-8 px-2">
+            <button onclick="exportData()" class="bg-white p-4 rounded-2xl border-2 border-dashed border-slate-200 text-xs font-bold text-slate-400">导出 Json 备份</button>
+            <label class="bg-white p-4 rounded-2xl border-2 border-dashed border-slate-200 text-xs font-bold text-slate-400 flex items-center justify-center cursor-pointer">
                 导入本地数据 <input type="file" class="hidden" onchange="importData(this)">
             </label>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
-            <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-6 rounded-[2.5rem] shadow-sm border-b-4 border-transparent cursor-pointer card-active transition-all">
-                <div class="text-[10px] text-slate-400 font-black mb-1 uppercase tracking-widest font-bold">Total</div>
+            <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-6 rounded-[2.5rem] shadow-sm border-b-4 border-transparent cursor-pointer card-active">
+                <div class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest">全部计划</div>
                 <div id="stat-total" class="text-3xl font-black">0</div>
             </div>
-            <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-6 rounded-[2.5rem] shadow-sm border-b-4 border-transparent cursor-pointer transition-all">
-                <div class="text-[10px] text-emerald-500 font-black mb-1 uppercase tracking-widest font-bold">Done</div>
+            <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-6 rounded-[2.5rem] shadow-sm border-b-4 border-transparent cursor-pointer">
+                <div class="text-[10px] text-emerald-500 font-bold mb-1 uppercase tracking-widest">已成交</div>
                 <div id="stat-success" class="text-3xl font-black text-emerald-500">0</div>
             </div>
-            <div onclick="setQuickFilter('pending')" id="card-pending" class="bg-white p-6 rounded-[2.5rem] shadow-sm border-b-4 border-transparent cursor-pointer transition-all">
-                <div class="text-[10px] text-amber-500 font-black mb-1 uppercase tracking-widest font-bold">Wait</div>
+            <div onclick="setQuickFilter('pending')" id="card-pending" class="bg-white p-6 rounded-[2.5rem] shadow-sm border-b-4 border-transparent cursor-pointer">
+                <div class="text-[10px] text-amber-500 font-bold mb-1 uppercase tracking-widest">等候中</div>
                 <div id="stat-pending" class="text-3xl font-black text-amber-500">0</div>
             </div>
             <div class="bg-slate-900 p-6 rounded-[2.5rem] shadow-2xl">
-                <div class="text-[10px] text-slate-500 font-black mb-1 uppercase tracking-widest">Capital</div>
+                <div class="text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-widest">成交总规模</div>
                 <div id="stat-amount" class="text-2xl font-black text-white truncate tracking-tighter">￥0</div>
             </div>
         </div>
 
-        <div class="glass-card rounded-[3.5rem] shadow-xl overflow-hidden">
-            <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-white/50">
-                <div class="flex items-center gap-4">
-                    <select id="filter-market" onchange="renderTable()" class="bg-transparent text-xs font-black outline-none border-none cursor-pointer">
-                        <option value="all">全市场查看</option>
-                        <option value="美股">美股市场</option><option value="美股期权">美股期权</option>
-                        <option value="港股">港股市场</option><option value="A股">A股市场</option>
-                    </select>
-                </div>
-                <button onclick="resetFilter()" class="text-blue-600 font-black text-xs uppercase">Reset</button>
+        <div class="glass-card rounded-[3.5rem] overflow-hidden">
+            <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-white">
+                <select id="filter-market" onchange="renderTable()" class="bg-transparent text-xs font-black outline-none border-none cursor-pointer">
+                    <option value="all">全市场查看</option>
+                    <option value="美股">美股</option><option value="美股期权">美股期权</option>
+                    <option value="港股">港股</option><option value="A股">A股</option>
+                </select>
+                <button onclick="resetFilter()" class="text-blue-600 font-bold text-xs uppercase">刷新显示</button>
             </div>
             <div class="overflow-x-auto no-scrollbar">
                 <table class="w-full text-left min-w-[850px]">
-                    <thead class="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] bg-slate-50/50">
+                    <thead class="text-[10px] font-black text-slate-300 uppercase tracking-widest bg-slate-50/50">
                         <tr>
-                            <th class="px-10 py-6">日期/标的</th>
-                            <th class="px-8 py-6 text-center">方向/市场</th>
-                            <th class="px-8 py-6 text-right">单价/数量</th>
+                            <th class="px-10 py-6">日期 / 标的名称</th>
+                            <th class="px-8 py-6 text-center">方向 / 市场</th>
+                            <th class="px-8 py-6 text-right">单价 / 数量</th>
                             <th class="px-8 py-6 text-right">预估金额</th>
-                            <th class="px-10 py-6 text-center">状态管理</th>
+                            <th class="px-10 py-6 text-center">操作</th>
                         </tr>
                     </thead>
-                    <tbody id="dataTable" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+                    <tbody id="dataTable" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-slate-900/70 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-        <div class="bg-white w-full max-w-lg rounded-t-[4rem] sm:rounded-[4rem] p-10 sm:p-12 shadow-2xl overflow-y-auto max-h-[92vh]">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-8 sm:hidden"></div>
+    <div id="modal" class="hidden fixed inset-0 bg-slate-900/60 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-lg rounded-t-[4rem] sm:rounded-[4rem] p-10 shadow-2xl overflow-y-auto max-h-[92vh]">
             <div class="flex justify-between items-center mb-10">
-                <h2 id="modalTitle" class="text-3xl font-black tracking-tighter">计划录入</h2>
-                <button onclick="closeModal()" class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"><i class="fa fa-times"></i></button>
+                <h2 class="text-2xl font-black">录入新交易计划</h2>
+                <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300"><i class="fa fa-times"></i></button>
             </div>
-            
             <input type="hidden" id="f_id">
             <div class="grid grid-cols-2 gap-6 mb-8">
                 <div class="col-span-1">
-                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">Market</label>
-                    <select id="f_market" onchange="onMarketChange()" class="w-full bg-slate-50 p-5 rounded-3xl font-bold">
+                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">市场</label>
+                    <select id="f_market" onchange="onMarketChange()" class="w-full bg-slate-50 p-5 rounded-3xl font-bold border-none">
                         <option value="美股">美股</option><option value="美股期权">美股期权</option>
                         <option value="港股">港股</option><option value="A股">A股</option>
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">Action</label>
-                    <select id="f_direction" class="w-full bg-slate-50 p-5 rounded-3xl font-bold">
+                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">方向</label>
+                    <select id="f_direction" class="w-full bg-slate-50 p-5 rounded-3xl font-bold border-none">
                         <option value="买入">买入</option><option value="卖出">卖出</option>
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">Symbol</label>
-                    <input id="f_symbol" type="text" oninput="this.value = this.value.toUpperCase()" class="w-full bg-slate-50 p-5 rounded-3xl font-black font-mono tracking-widest" placeholder="SYMBOL">
+                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">代码</label>
+                    <input id="f_symbol" type="text" oninput="this.value = this.value.toUpperCase()" class="w-full bg-slate-50 p-5 rounded-3xl font-black font-mono" placeholder="AAPL">
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">Name</label>
-                    <input id="f_name" type="text" class="w-full bg-slate-50 p-5 rounded-3xl font-bold" placeholder="标的名称">
+                    <label class="text-[10px] font-black text-slate-400 mb-2 block tracking-widest uppercase">名称</label>
+                    <input id="f_name" type="text" class="w-full bg-slate-50 p-5 rounded-3xl font-bold" placeholder="标的简称">
                 </div>
-                <div class="col-span-3 grid grid-cols-3 gap-3">
-                    <input id="f_date" type="date" class="bg-slate-50 p-4 rounded-2xl text-[10px] font-black border-none">
+                <div class="col-span-2 grid grid-cols-3 gap-3">
+                    <input id="f_date" type="date" class="bg-slate-50 p-4 rounded-2xl text-[10px] font-black">
                     <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="bg-slate-50 p-4 rounded-2xl text-sm font-black" placeholder="价格">
                     <input id="f_quantity" type="number" oninput="calcTotal()" class="bg-slate-50 p-4 rounded-2xl text-sm font-black" placeholder="数量">
                 </div>
             </div>
-
-            <div class="bg-slate-900 rounded-[2.5rem] p-8 flex justify-between items-center mb-10 shadow-2xl">
+            <div class="bg-slate-900 rounded-[2.5rem] p-8 flex justify-between items-center mb-8 shadow-2xl">
                 <div>
-                    <div class="text-[10px] text-slate-500 font-black mb-1 uppercase tracking-widest">Position Value <span id="opt_tag" class="hidden text-blue-500 ml-2">x100 Multiplier</span></div>
+                    <div class="text-[10px] text-slate-500 font-bold mb-2 uppercase tracking-widest">预估成交额 <span id="opt_tag" class="hidden text-blue-500 ml-2">x100 杠杆已计入</span></div>
                     <div id="f_total_display" class="text-3xl font-mono text-blue-400 font-black">￥ 0.00</div>
                 </div>
                 <i class="fa fa-calculator text-slate-700 text-3xl"></i>
             </div>
-
-            <textarea id="f_note" class="w-full bg-slate-50 p-6 rounded-[2rem] h-24 text-sm mb-10 outline-none focus:bg-white transition-all" placeholder="交易笔记 / 止损止盈位 / 逻辑记录..."></textarea>
-            <button onclick="submitForm()" class="w-full bg-blue-600 text-white py-7 rounded-[2.5rem] font-black text-xl shadow-xl shadow-blue-100 active:scale-95 transition-all">确认并保存云端</button>
+            <textarea id="f_note" class="w-full bg-slate-50 p-6 rounded-[2rem] h-24 text-sm mb-10 outline-none" placeholder="输入备忘逻辑..."></textarea>
+            <button onclick="submitForm()" class="w-full bg-blue-600 text-white py-6 rounded-[2.5rem] font-black text-xl shadow-xl shadow-blue-100">保存并更新云端</button>
         </div>
     </div>
 
     <script>
-        // 1. 核心凭证与混淆逻辑
-        // -----------------------------------------------------------------
+        // 配置 (明文直连，排除干扰)
         const BIN_ID = '699bba17ae596e708f40f47e'; 
         const MASTER_KEY = '$2a$10$6.X9SFXrgyQPaWMEYe5Eeu8G73g36QEs4BKZhH4hm0TS4Wfnd8ElC'; 
-        
-        // 密码
-        const PWD_SALT = [60, 62, 54, 63, 54, 55]; 
+        const PASS_CODE = "680901"; 
 
         let appData = { records: [] };
         let currentFilter = 'all';
 
-        // 2. 验证与进入
-        // -----------------------------------------------------------------
         function checkPassword() {
             const input = document.getElementById('access-pwd').value.trim();
-            const pass = PWD_SALT.map(s => String.fromCharCode(s + 8)).join(''); 
-            
-            if (input === pass) {
+            // 最原始的字符串比对
+            if (input === PASS_CODE) {
                 document.getElementById('lock-screen').style.display = 'none';
-                const main = document.getElementById('main-content');
-                main.classList.remove('hidden');
-                setTimeout(() => main.classList.add('opacity-100'), 50);
+                document.getElementById('main-content').classList.remove('hidden');
+                setTimeout(() => document.getElementById('main-content').classList.add('opacity-100'), 50);
                 loadFromCloud();
             } else {
                 document.getElementById('pwd-panel').classList.add('shake');
@@ -202,14 +174,11 @@
                     document.getElementById('pwd-panel').classList.remove('shake');
                     document.getElementById('pwd-error').classList.add('hidden');
                 }, 1000);
-                document.getElementById('access-pwd').value = '';
             }
         }
 
-        // 3. 云端核心逻辑
-        // -----------------------------------------------------------------
         async function loadFromCloud() {
-            updateStatus('syncing', 'CONNECTING...');
+            updateStatus('syncing', '正在连接...');
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                     headers: { 'X-Master-Key': MASTER_KEY }
@@ -217,34 +186,30 @@
                 const json = await res.json();
                 appData = json.record || { records: [] };
                 renderTable();
-                updateStatus('success', 'SYNCED');
-            } catch (e) { updateStatus('error', 'TIMEOUT'); }
+                updateStatus('success', '同步成功');
+            } catch (e) { updateStatus('error', '连接错误'); }
         }
 
         async function saveToCloud() {
-            updateStatus('syncing', 'UPDATING...');
+            updateStatus('syncing', '正在同步...');
             try {
                 await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                     body: JSON.stringify(appData)
                 });
-                updateStatus('success', 'CLOUD SAVED');
-            } catch (e) { alert('云端同步异常，请手动备份'); }
+                updateStatus('success', '已同步');
+            } catch (e) { alert('云端保存失败'); }
         }
 
         function updateStatus(type, text) {
             const dot = document.getElementById('sync-dot');
             document.getElementById('sync-status').innerText = text;
-            dot.className = "w-2.5 h-2.5 rounded-full mr-2 border-2 border-white shadow-sm " + 
-                (type==='syncing'?'bg-blue-400 animate-pulse':(type==='success'?'bg-emerald-500':'bg-red-500'));
+            dot.className = "w-2.5 h-2.5 rounded-full mr-2 border-2 border-white " + (type==='syncing'?'bg-blue-400 animate-pulse':(type==='success'?'bg-emerald-500':'bg-red-500'));
         }
 
-        // 4. 数据渲染与交互
-        // -----------------------------------------------------------------
         function onMarketChange() {
-            const m = document.getElementById('f_market').value;
-            document.getElementById('opt_tag').classList.toggle('hidden', m !== "美股期权");
+            document.getElementById('opt_tag').classList.toggle('hidden', document.getElementById('f_market').value !== "美股期权");
             calcTotal();
         }
 
@@ -281,12 +246,9 @@
 
         function renderTable() {
             const list = appData.records || [];
-            const marketType = document.getElementById('filter-market').value;
-            const filtered = list.filter(i => 
-                (currentFilter === 'all' || i.status === currentFilter) &&
-                (marketType === 'all' || i.market === marketType)
-            );
-
+            const mFilter = document.getElementById('filter-market').value;
+            const filtered = list.filter(i => (currentFilter === 'all' || i.status === currentFilter) && (mFilter === 'all' || i.market === mFilter));
+            
             document.getElementById('stat-total').innerText = list.length;
             document.getElementById('stat-success').innerText = list.filter(i => i.status === 'success').length;
             document.getElementById('stat-pending').innerText = list.filter(i => i.status === 'pending').length;
@@ -294,29 +256,29 @@
             document.getElementById('stat-amount').innerText = '￥' + Math.floor(totalAmt).toLocaleString();
 
             document.getElementById('dataTable').innerHTML = filtered.map(i => `
-                <tr class="hover:bg-slate-50/80 transition-all group">
+                <tr class="hover:bg-slate-50 transition-all group">
                     <td class="px-10 py-7">
-                        <div class="text-[10px] text-slate-300 font-black font-mono mb-1 tracking-tighter">${i.date}</div>
-                        <div class="font-black text-slate-800 text-sm tracking-tight">${i.name}</div>
+                        <div class="text-[10px] text-slate-300 font-bold mb-1">${i.date}</div>
+                        <div class="font-black text-slate-800 text-sm">${i.name}</div>
                     </td>
                     <td class="px-8 py-7 text-center">
-                        <span class="text-[9px] font-black px-2.5 py-1.5 rounded-xl ${i.direction==='买入'?'text-red-500 bg-red-50':'text-emerald-600 bg-emerald-50'}">${i.direction}</span>
-                        <div class="text-[9px] text-slate-400 font-bold mt-2 uppercase tracking-widest">${i.symbol} · ${i.market}</div>
+                        <span class="text-[9px] font-black px-2 py-1 rounded bg-slate-100 ${i.direction==='买入'?'text-red-500':'text-emerald-500'}">${i.direction}</span>
+                        <div class="text-[9px] text-slate-400 font-bold mt-1 uppercase">${i.symbol} · ${i.market}</div>
                     </td>
                     <td class="px-8 py-7 text-right font-mono">
                         <div class="text-sm font-black text-slate-700">${i.price.toFixed(2)}</div>
-                        <div class="text-[10px] text-slate-300 font-bold">数量: ${i.quantity}</div>
+                        <div class="text-[10px] text-slate-300">数量: ${i.quantity}</div>
                     </td>
                     <td class="px-8 py-7 text-right font-mono font-black text-slate-900 tracking-tighter">￥${Math.floor(i.total || 0).toLocaleString()}</td>
-                    <td class="px-10 py-7">
-                        <div class="flex flex-col items-center gap-3">
+                    <td class="px-10 py-7 text-center">
+                        <div class="flex flex-col items-center gap-2">
                             ${i.status === 'pending' ? `
                                 <div class="flex gap-2">
-                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[9px] px-3.5 py-1.5 rounded-full font-black shadow-lg shadow-emerald-100 active:scale-90">成交</button>
-                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-slate-200 text-slate-500 text-[9px] px-3.5 py-1.5 rounded-full font-black active:scale-90">作废</button>
+                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[9px] px-3 py-1 rounded-full font-black">完成</button>
+                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-slate-200 text-slate-400 text-[9px] px-3 py-1 rounded-full font-black">取消</button>
                                 </div>
-                            ` : `<span class="${i.status==='success'?'text-emerald-400':'text-slate-300'} font-black text-[9px] uppercase italic tracking-[0.2em] underline decoration-2 underline-offset-4">${i.status==='success'?'SUCCESS':'CANCELED'}</span>`}
-                            <div class="flex gap-5 opacity-0 group-hover:opacity-100 transition-all scale-90">
+                            ` : `<span class="${i.status==='success'?'text-emerald-400':'text-slate-300'} font-black text-[9px] uppercase tracking-widest italic">${i.status}</span>`}
+                            <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-all">
                                 <i onclick="editItem(${i.id})" class="fa fa-pencil text-slate-300 hover:text-blue-500 cursor-pointer"></i>
                                 <i onclick="deleteItem(${i.id})" class="fa fa-trash text-slate-200 hover:text-red-500 cursor-pointer"></i>
                             </div>
@@ -325,23 +287,17 @@
                 </tr>`).join('');
         }
 
-        // 5. 辅助工具
-        // -----------------------------------------------------------------
-        function setQuickFilter(s) { 
-            currentFilter = s; 
-            ['all', 'success', 'pending'].forEach(id => document.getElementById('card-'+id).classList.toggle('card-active', id === s));
-            renderTable(); 
-        }
+        function setQuickFilter(s) { currentFilter = s; ['all', 'success', 'pending'].forEach(id => document.getElementById('card-'+id).classList.toggle('card-active', id === s)); renderTable(); }
         function openModal() { document.getElementById('modal').classList.remove('hidden'); document.getElementById('f_id').value = ""; document.getElementById('f_date').value = new Date().toISOString().split('T')[0]; onMarketChange(); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); ['f_symbol','f_name','f_price','f_quantity','f_note'].forEach(id => document.getElementById(id).value=''); }
         async function updateStatus(id, s) { const idx = appData.records.findIndex(r => r.id === id); appData.records[idx].status = s; renderTable(); await saveToCloud(); }
-        async function deleteItem(id) { if(confirm('确定永久删除该记录吗？')) { appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud(); } }
+        async function deleteItem(id) { if(confirm('删除吗？')) { appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud(); } }
         function resetFilter() { document.getElementById('filter-market').value = 'all'; setQuickFilter('all'); }
         function toggleTools() { document.getElementById('tool-box').classList.toggle('hidden'); }
         function exportData() {
             const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `交易计划备份_${new Date().toISOString().slice(0,10)}.json`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `交易计划_${new Date().toISOString().slice(0,10)}.json`; a.click();
         }
         function importData(input) {
             const reader = new FileReader();
