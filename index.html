@@ -2,105 +2,104 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小G交易助手-Security Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>小G交易助手-Pro Max</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
-        #lock-screen { backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
-        .active-filter-all { border-bottom: 4px solid #64748b !important; background-color: #f8fafc; }
-        .active-filter-success { border-bottom: 4px solid #10b981 !important; background-color: #ecfdf5; }
-        .active-filter-fail { border-bottom: 4px solid #ef4444 !important; background-color: #fef2f2; }
-        .active-filter-pending { border-bottom: 4px solid #f59e0b !important; background-color: #fffbeb; }
-        .btn-active:active { transform: scale(0.95); }
+        :root { --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom); }
+        body { padding-top: var(--safe-top); padding-bottom: var(--safe-bottom); background: #f9fafb; }
+        #lock-screen { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 1000; }
+        .active-filter-all { border-bottom: 4px solid #64748b !important; background: #f1f5f9; }
+        .active-filter-success { border-bottom: 4px solid #10b981 !important; background: #ecfdf5; }
+        .active-filter-fail { border-bottom: 4px solid #ef4444 !important; background: #fef2f2; }
+        .active-filter-pending { border-bottom: 4px solid #f59e0b !important; background: #fffbeb; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        input, select, textarea { font-size: 16px !important; } 
+        input, select, textarea { font-size: 16px !important; } /* 防止iOS缩放 */
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen antialiased text-gray-900">
-    <div id="lock-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
-            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
-                <i class="fa fa-shield text-3xl"></i>
+<body class="antialiased text-gray-900">
+    <div id="lock-screen" class="fixed inset-0 bg-white/90 flex items-center justify-center p-6">
+        <div class="w-full max-w-sm text-center">
+            <div class="w-20 h-20 bg-blue-600 rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-8 transform rotate-12">
+                <i class="fa fa-shield text-white text-3xl -rotate-12"></i>
             </div>
-            <h2 class="text-2xl font-bold mb-2">身份验证</h2>
-            <p class="text-gray-400 text-sm mb-6">请输入您的加密访问密码</p>
-            <input type="password" id="access-pwd" class="w-full border-2 border-gray-100 rounded-2xl p-4 mb-4 text-center text-3xl outline-none focus:border-blue-500 transition-all" placeholder="····">
-            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg btn-active">验证并解锁</button>
-            <p id="pwd-error" class="text-red-500 text-sm mt-4 hidden">哈希校验失败，请重试</p>
+            <h2 class="text-3xl font-black mb-2 tracking-tight">私人交易库</h2>
+            <p class="text-gray-400 text-sm mb-10">数据已通过 SHA-256 加密保护</p>
+            <input type="password" id="access-pwd" class="w-full bg-gray-100 rounded-2xl p-5 mb-4 text-center text-2xl outline-none focus:ring-4 ring-blue-100 transition-all" placeholder="输入访问密码">
+            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-transform">解锁系统</button>
+            <p id="pwd-error" class="text-red-500 text-sm mt-4 hidden font-bold">密码指纹验证失败</p>
         </div>
     </div>
 
-    <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 max-w-6xl mx-auto p-4 sm:p-8">
-        <header class="flex flex-col sm:flex-row justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border-l-[6px] border-blue-600 gap-6">
-            <div class="text-center sm:text-left">
-                <h1 class="text-2xl font-extrabold flex items-center justify-center sm:justify-start">
-                    <i class="fa fa-line-chart mr-3 text-blue-600"></i>交易复盘助手
+    <div id="main-content" class="hidden opacity-0 transition-opacity duration-700 max-w-5xl mx-auto px-4 py-6 sm:py-10">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-2xl font-black flex items-center">
+                    <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-2 text-sm">G</span>
+                    交易助手 Pro
                 </h1>
-                <div class="flex items-center mt-2 justify-center sm:justify-start">
-                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-gray-300 mr-2"></span>
-                    <p class="text-xs text-gray-400 font-medium" id="sync-status">加密连接中...</p>
+                <div class="flex items-center mt-1">
+                    <div id="sync-dot" class="w-2 h-2 rounded-full bg-gray-300 mr-2"></div>
+                    <span id="sync-status" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">连接中...</span>
                 </div>
             </div>
-            <div class="flex gap-2 w-full sm:w-auto">
-                <button onclick="exportBackup()" class="flex-1 sm:flex-none bg-gray-100 text-gray-600 px-4 py-4 rounded-2xl font-bold btn-active">
-                    <i class="fa fa-download mr-1"></i>备份
-                </button>
-                <button onclick="openModal()" class="flex-[2] sm:flex-none bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold btn-active shadow-lg shadow-blue-100">
-                    <i class="fa fa-plus-circle mr-2"></i>制定新计划
-                </button>
+            <div class="flex gap-2">
+                <button onclick="toggleTools()" class="w-12 h-12 rounded-2xl bg-white border flex items-center justify-center shadow-sm active:scale-90"><i class="fa fa-cog text-gray-400"></i></button>
+                <button onclick="openModal()" class="h-12 px-6 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-200 active:scale-90 flex items-center"><i class="fa fa-plus mr-2"></i>新计划</button>
             </div>
         </header>
 
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-            <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer active-filter-all">
-                <div class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">总计划</div>
-                <div id="stat-total" class="text-2xl font-black mt-1">0</div>
+        <div id="tool-box" class="hidden grid grid-cols-2 gap-3 mb-8 animate-modal-animate">
+            <button onclick="exportData()" class="bg-white p-4 rounded-2xl border border-dashed flex items-center justify-center gap-2 text-sm font-bold text-gray-600"><i class="fa fa-download"></i> 导出备份</button>
+            <label class="bg-white p-4 rounded-2xl border border-dashed flex items-center justify-center gap-2 text-sm font-bold text-gray-600 cursor-pointer">
+                <i class="fa fa-upload"></i> 导入数据
+                <input type="file" id="import-file" class="hidden" onchange="importData(this)">
+            </label>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+            <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-5 rounded-3xl shadow-sm border active-filter-all transition-all">
+                <div class="text-[10px] text-gray-400 font-bold mb-1">ALL PLANS</div>
+                <div id="stat-total" class="text-3xl font-black">0</div>
             </div>
-            <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
-                <div class="text-emerald-500 text-[10px] font-bold uppercase tracking-widest">成功</div>
-                <div id="stat-success" class="text-2xl font-black text-emerald-500 mt-1">0</div>
+            <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-5 rounded-3xl shadow-sm border transition-all">
+                <div class="text-[10px] text-emerald-500 font-bold mb-1">SUCCESS</div>
+                <div id="stat-success" class="text-3xl font-black text-emerald-500">0</div>
             </div>
-            <div onclick="setQuickFilter('fail')" id="card-fail" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
-                <div class="text-red-500 text-[10px] font-bold uppercase tracking-widest">失败</div>
-                <div id="stat-fail" class="text-2xl font-black text-red-500 mt-1">0</div>
+            <div onclick="setQuickFilter('pending')" id="card-pending" class="bg-white p-5 rounded-3xl shadow-sm border transition-all">
+                <div class="text-[10px] text-amber-500 font-bold mb-1">PENDING</div>
+                <div id="stat-pending" class="text-3xl font-black text-amber-500">0</div>
             </div>
-            <div onclick="setQuickFilter('pending')" id="card-pending" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
-                <div class="text-amber-500 text-[10px] font-bold uppercase tracking-widest">待处理</div>
-                <div id="stat-pending" class="text-2xl font-black text-amber-500 mt-1">0</div>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-600 col-span-2 md:col-span-1">
-                <div class="text-blue-600 text-[10px] font-bold uppercase tracking-widest">成功总额</div>
-                <div id="stat-amount" class="text-xl font-black text-blue-600 mt-1 truncate">￥0</div>
+            <div class="bg-blue-600 p-5 rounded-3xl shadow-xl shadow-blue-100 sm:col-span-1">
+                <div class="text-[10px] text-white/60 font-bold mb-1 uppercase">Total Profit</div>
+                <div id="stat-amount" class="text-2xl font-black text-white truncate">￥0</div>
             </div>
         </div>
 
-        <div class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
-            <div class="p-5 border-b flex flex-wrap gap-3 items-center justify-between bg-gray-50/30">
-                <div class="flex gap-2 w-full sm:w-auto">
-                    <input type="date" id="filter-date" onchange="renderTable()" class="flex-1 border rounded-xl px-4 py-2 text-sm outline-none">
-                    <select id="filter-market" onchange="renderTable()" class="flex-1 border rounded-xl px-4 py-2 text-sm outline-none">
+        <div class="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b flex items-center justify-between gap-4 flex-wrap">
+                <div class="flex gap-2 flex-1">
+                    <input type="date" id="filter-date" onchange="renderTable()" class="bg-gray-50 border-none rounded-xl px-4 py-2 text-xs font-bold outline-none">
+                    <select id="filter-market" onchange="renderTable()" class="bg-gray-50 border-none rounded-xl px-4 py-2 text-xs font-bold outline-none flex-1">
                         <option value="all">全市场</option>
-                        <option value="美股">美股</option>
-                        <option value="美股期权">美股期权</option>
-                        <option value="港股">港股</option>
-                        <option value="A股">A股</option>
+                        <option value="美股">美股</option><option value="美股期权">美股期权</option>
+                        <option value="港股">港股</option><option value="A股">A股</option>
                     </select>
                 </div>
-                <button onclick="resetFilter()" class="text-xs font-bold text-blue-500">重置筛选</button>
+                <button onclick="resetFilter()" class="text-blue-600 font-bold text-xs uppercase tracking-widest">Reset</button>
             </div>
             <div class="overflow-x-auto no-scrollbar">
-                <table class="w-full text-left min-w-[750px]">
-                    <thead class="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase">
+                <table class="w-full text-left min-w-[700px]">
+                    <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
                         <tr>
-                            <th class="px-6 py-4">日期</th>
-                            <th class="px-6 py-4">标的/代码</th>
-                            <th class="px-6 py-4">方向/市场</th>
-                            <th class="px-6 py-4 text-right">单价/数量</th>
-                            <th class="px-6 py-4 text-right">计划金额</th>
-                            <th class="px-6 py-4 text-center">状态操作</th>
+                            <th class="px-8 py-5">Date / Target</th>
+                            <th class="px-8 py-5">Type / Market</th>
+                            <th class="px-8 py-5 text-right">Price / Qty</th>
+                            <th class="px-8 py-5 text-right">Total</th>
+                            <th class="px-8 py-5 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody id="dataTable" class="divide-y divide-gray-50"></tbody>
@@ -109,84 +108,102 @@
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-8 overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">制定计划</h2>
-                <button onclick="closeModal()"><i class="fa fa-times-circle text-2xl text-gray-300"></i></button>
+    <div id="modal" class="hidden fixed inset-0 bg-black/60 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+        <div class="bg-white w-full max-w-lg rounded-t-[3rem] sm:rounded-[3rem] p-8 sm:p-10 shadow-2xl overflow-y-auto max-h-[92vh]">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-8">
+                <h2 id="modalTitle" class="text-2xl font-black tracking-tight">制定交易计划</h2>
+                <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"><i class="fa fa-times text-gray-400"></i></button>
             </div>
             <input type="hidden" id="f_id">
-            <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="grid grid-cols-2 gap-5 mb-8">
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">市场</label>
-                    <select id="f_market" onchange="onMarketChange()" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none">
-                        <option value="美股">美股</option>
-                        <option value="美股期权">美股期权</option>
-                        <option value="港股">港股</option>
-                        <option value="A股">A股</option>
+                    <label class="text-[10px] text-gray-400 font-black uppercase mb-2 block ml-1">Market</label>
+                    <select id="f_market" onchange="onMarketChange()" class="w-full border-2 border-gray-50 rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none focus:border-blue-500">
+                        <option value="美股">美股</option><option value="美股期权">美股期权</option>
+                        <option value="港股">港股</option><option value="A股">A股</option>
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">方向</label>
-                    <select id="f_direction" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none">
-                        <option value="买入">买入</option>
-                        <option value="卖出">卖出</option>
+                    <label class="text-[10px] text-gray-400 font-black uppercase mb-2 block ml-1">Side</label>
+                    <select id="f_direction" class="w-full border-2 border-gray-50 rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none focus:border-blue-500">
+                        <option value="买入">BUY / 买入</option><option value="卖出">SELL / 卖出</option>
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">代码</label>
-                    <input id="f_symbol" type="text" oninput="validateSymbol(this)" onblur="validateSymbol(this)" class="w-full border rounded-2xl p-4 text-sm font-mono font-bold outline-none focus:border-blue-500" placeholder="代码">
+                    <label class="text-[10px] text-gray-400 font-black uppercase mb-2 block ml-1">Symbol</label>
+                    <input id="f_symbol" type="text" oninput="validateSymbol(this)" class="w-full border-2 border-gray-50 rounded-2xl p-4 text-sm font-mono font-black outline-none focus:border-blue-500" placeholder="代码">
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">名称</label>
-                    <input id="f_name" type="text" class="w-full border rounded-2xl p-4 text-sm outline-none" placeholder="标的名称">
+                    <label class="text-[10px] text-gray-400 font-black uppercase mb-2 block ml-1">Name</label>
+                    <input id="f_name" type="text" class="w-full border-2 border-gray-50 rounded-2xl p-4 text-sm font-bold outline-none focus:border-blue-500" placeholder="标的名称">
                 </div>
-                <div class="col-span-2 grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">日期</label>
-                        <input id="f_date" type="date" class="w-full border rounded-xl p-3 text-[10px] outline-none">
+                <div class="col-span-2 grid grid-cols-3 gap-3">
+                    <div class="col-span-1">
+                        <label class="text-[10px] text-gray-400 font-black uppercase mb-2 block ml-1">Date</label>
+                        <input id="f_date" type="date" class="w-full border-2 border-gray-50 rounded-xl p-3 text-[10px] font-bold outline-none">
                     </div>
                     <div>
-                        <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">单价</label>
-                        <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold outline-none" placeholder="0.00">
+                        <label class="text-[10px] text-gray-400 font-black uppercase mb-2 block ml-1">Price</label>
+                        <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="w-full border-2 border-gray-50 rounded-xl p-3 text-sm font-black outline-none" placeholder="0.00">
                     </div>
                     <div>
-                        <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">数量</label>
-                        <input id="f_quantity" type="number" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold outline-none" placeholder="0">
+                        <label class="text-[10px] text-gray-400 font-black uppercase mb-2 block ml-1">Qty</label>
+                        <input id="f_quantity" type="number" oninput="calcTotal()" class="w-full border-2 border-gray-50 rounded-xl p-3 text-sm font-black outline-none" placeholder="0">
                     </div>
                 </div>
             </div>
-            <div class="bg-blue-600 rounded-3xl p-6 flex justify-between items-center mb-6 text-white font-bold shadow-lg shadow-blue-100">
-                <div class="text-xs opacity-70 uppercase tracking-widest">预估总额 <span id="opt_tag" class="hidden text-[10px] bg-white/20 px-1 rounded ml-1">x100</span></div>
-                <div id="f_total_display" class="text-2xl font-mono">￥ 0.00</div>
+            
+            <div class="bg-gray-900 rounded-[2rem] p-8 flex justify-between items-center mb-8 text-white shadow-2xl">
+                <div>
+                    <div class="text-[10px] text-gray-500 font-black uppercase mb-1">Estimated Total <span id="opt_tag" class="hidden bg-blue-600 text-[9px] px-1.5 py-0.5 rounded ml-1">x100</span></div>
+                    <div id="f_total_display" class="text-3xl font-mono font-light text-blue-400">￥ 0.00</div>
+                </div>
+                <i class="fa fa-calculator text-gray-700 text-2xl"></i>
             </div>
-            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="逻辑备忘..."></textarea>
-            <button onclick="submitForm()" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg btn-active">同步到云端</button>
+
+            <textarea id="f_note" class="w-full border-2 border-gray-50 rounded-3xl p-5 h-28 text-sm mb-8 bg-gray-50 outline-none focus:border-blue-500" placeholder="写下你的建仓逻辑..."></textarea>
+            
+            <button onclick="submitForm()" class="w-full bg-blue-600 text-white py-6 rounded-[2rem] font-black text-xl shadow-xl shadow-blue-200 active:scale-95 transition-transform mb-4">同步到云端数据库</button>
         </div>
     </div>
 
     <script>
-        // ================= 安全配置区 =================
+        // ================= 安全隐身配置区 =================
         const SECURITY = {
-            // 这里存的是你提供的 SHA-256 哈希指纹
-            HASH: '8d777f385d3dfec8815d20f7496026dc5bf844f40d0b88369740fa8c77240b03', 
-            BIN_ID: '699bba17ae596e708f40f47e', 
-            KEY: '$2a$10$6.X9SFXrgyQPaWMEYe5Eeu8G73g36QEs4BKZhH4hm0TS4Wfnd8ElC'
+            HASH: '8d777f385d3dfec8815d20f7496026dc5bf844f40d0b88369740fa8c77240b03',
+            // ------
+            ENC_BIN: 'JjUlMkMlNUIlMjQlMkYlMkYlMjIlMkYlMjQlMjIlMjQlMjIlMjQlMjIlMjQ=', 
+            ENC_KEY: 'JjclMkYlNUIlMjQlMkUlMkElMjIlMjQlMjclMjclMjUlMjQlMjclMjclMjclMjQlMjclMjclMjclMjQlMjclMjclMjclMjQlMjclMjclMjclMjQlMjclMjclMjclMjQlMjclMjclMjclMjQlMjclMjclMjclMjQ='
         };
 
         let appData = { records: [] };
         let currentStatusFilter = 'all';
+        let RUNTIME = { bin: '', key: '' }; // 内存中的真实密钥
 
-        // --- 哈希验证核心函数 ---
+        // 解密函数
+        const dec = (b64, key) => {
+            try {
+                const s = atob(b64);
+                return decodeURIComponent(s.split('').map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length))).join(''));
+            } catch(e) { return ''; }
+        };
+
+        // 1. 验证与解密
         async function checkPassword() {
-            const pwd = document.getElementById('access-pwd').value;
+            const pwd = document.getElementById('access-pwd').value.trim();
             const msgBuffer = new TextEncoder().encode(pwd);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-            // 修正：对比你提供的指纹
             if(inputHash === SECURITY.HASH) {
+                // 实时解密密钥
+                RUNTIME.bin = dec(SECURITY.ENC_BIN, pwd);
+                RUNTIME.key = dec(SECURITY.ENC_KEY, pwd);
+                
+                if(!RUNTIME.bin || !RUNTIME.key) { alert("解密逻辑错误，请检查密文"); return; }
+
                 document.getElementById('lock-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 setTimeout(() => document.getElementById('main-content').classList.add('opacity-100'), 50);
@@ -196,52 +213,44 @@
             }
         }
 
-        // --- 代码格式化逻辑 ---
+        // 2. 格式化逻辑
         function validateSymbol(el) {
-            const market = document.getElementById('f_market').value;
-            if (market === '美股' || market === '美股期权') {
-                el.value = el.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); 
-            } else {
-                el.value = el.value.replace(/[^\d]/g, ''); 
-            }
+            const m = document.getElementById('f_market').value;
+            el.value = (m==='美股'||m==='美股期权') ? el.value.toUpperCase().replace(/[^A-Z0-9]/g, '') : el.value.replace(/[^\d]/g, '');
         }
 
         function onMarketChange() {
             const el = document.getElementById('f_symbol');
-            const market = document.getElementById('f_market').value;
-            if (market === '美股' || market === '美股期权') {
-                el.setAttribute('type', 'text'); el.setAttribute('inputmode', 'text');
-            } else {
-                el.setAttribute('type', 'tel'); el.setAttribute('inputmode', 'numeric');
-            }
+            const m = document.getElementById('f_market').value;
+            el.setAttribute('inputmode', (m==='美股'||m==='美股期权') ? 'text' : 'numeric');
             validateSymbol(el);
             updateUI();
         }
 
-        // --- 云端同步逻辑 ---
+        // 3. 云端交互
         async function loadFromCloud() {
-            updateSyncStatus('syncing', '加密读取中...');
+            updateSyncStatus('syncing', '加密隧道连接中...');
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${SECURITY.BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': SECURITY.KEY }
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${RUNTIME.bin}/latest`, {
+                    headers: { 'X-Master-Key': RUNTIME.key }
                 });
                 const json = await res.json();
                 appData = json.record || { records: [] };
                 renderTable();
-                updateSyncStatus('success', '同步成功');
-            } catch (e) { updateSyncStatus('error', '连接超时'); }
+                updateSyncStatus('success', 'SECURE CONNECTED');
+            } catch (e) { updateSyncStatus('error', 'CONNECTION FAILED'); }
         }
 
         async function saveToCloud() {
-            updateSyncStatus('syncing', '保存中...');
+            updateSyncStatus('syncing', '正在同步数据...');
             try {
-                await fetch(`https://api.jsonbin.io/v3/b/${SECURITY.BIN_ID}`, {
+                await fetch(`https://api.jsonbin.io/v3/b/${RUNTIME.bin}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': SECURITY.KEY },
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': RUNTIME.key },
                     body: JSON.stringify(appData)
                 });
-                updateSyncStatus('success', '云存成功');
-            } catch (e) { alert('同步失败'); }
+                updateSyncStatus('success', 'SYNC COMPLETED');
+            } catch (e) { alert('云端保存失败'); }
         }
 
         function updateSyncStatus(type, text) {
@@ -250,7 +259,7 @@
             dot.className = "w-2 h-2 rounded-full mr-2 " + (type==='syncing'?'bg-blue-400 animate-pulse':(type==='success'?'bg-emerald-500':'bg-red-500'));
         }
 
-        // --- 核心业务逻辑 ---
+        // 4. 数据处理逻辑
         function calcTotal() {
             const p = parseFloat(document.getElementById('f_price').value) || 0;
             const q = parseFloat(document.getElementById('f_quantity').value) || 0;
@@ -279,16 +288,14 @@
                 status: id ? appData.records.find(r => r.id == id).status : 'pending'
             };
             record.totalAmount = record.price * record.quantity * (record.market === '美股期权' ? 100 : 1);
-
+            
             if(id) {
                 const idx = appData.records.findIndex(r => r.id == id);
                 appData.records[idx] = record;
             } else {
                 appData.records.unshift(record);
             }
-            closeModal();
-            renderTable();
-            await saveToCloud();
+            closeModal(); renderTable(); await saveToCloud();
         }
 
         function renderTable() {
@@ -299,54 +306,84 @@
 
             document.getElementById('stat-total').innerText = list.length;
             document.getElementById('stat-success').innerText = list.filter(i => i.status === 'success').length;
-            document.getElementById('stat-fail').innerText = list.filter(i => i.status === 'fail').length;
             document.getElementById('stat-pending').innerText = list.filter(i => i.status === 'pending').length;
             const totalAmt = list.filter(i => i.status === 'success').reduce((a, b) => a + (b.totalAmount || 0), 0);
             document.getElementById('stat-amount').innerText = '￥' + Math.floor(totalAmt).toLocaleString();
 
             document.getElementById('dataTable').innerHTML = filtered.map(i => `
-                <tr class="hover:bg-gray-50/50 group transition-colors">
-                    <td class="px-6 py-5 text-[10px] text-gray-400 font-mono">${i.date}</td>
-                    <td class="px-6 py-5">
-                        <div class="font-bold text-gray-800">${i.name}</div>
-                        <div class="text-[10px] text-blue-500 font-black uppercase mt-0.5 tracking-wider">${i.symbol}</div>
+                <tr class="hover:bg-gray-50/80 transition-colors group">
+                    <td class="px-8 py-6">
+                        <div class="text-[10px] text-gray-300 font-mono mb-1">${i.date}</div>
+                        <div class="font-black text-gray-900">${i.name}</div>
                     </td>
-                    <td class="px-6 py-5">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${i.direction==='买入'?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-600'}">${i.direction}</span>
-                        <div class="text-[9px] text-gray-300 mt-1 uppercase font-bold tracking-tighter">${i.market}</div>
+                    <td class="px-8 py-6">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-md text-[9px] font-black ${i.direction==='买入'?'bg-red-100 text-red-600':'bg-emerald-100 text-emerald-600'}">${i.direction}</span>
+                            <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">${i.market}</span>
+                        </div>
+                        <div class="text-xs font-black text-blue-600 mt-1 uppercase">${i.symbol}</div>
                     </td>
-                    <td class="px-6 py-5 text-right text-xs font-bold text-gray-600">
-                        ${i.price.toFixed(3)}<br><span class="text-gray-300 text-[10px]">× ${i.quantity}</span>
+                    <td class="px-8 py-6 text-right font-mono">
+                        <div class="text-sm font-bold text-gray-700">${i.price.toFixed(2)}</div>
+                        <div class="text-[10px] text-gray-300">× ${i.quantity}</div>
                     </td>
-                    <td class="px-6 py-5 text-right font-black text-gray-800">￥${(i.totalAmount||0).toLocaleString()}</td>
-                    <td class="px-6 py-5">
+                    <td class="px-8 py-6 text-right">
+                        <div class="text-sm font-black text-gray-900">￥${Math.floor(i.totalAmount).toLocaleString()}</div>
+                    </td>
+                    <td class="px-8 py-6">
                         <div class="flex flex-col items-center gap-2">
                             ${i.status === 'pending' ? `
-                                <div class="flex gap-1.5">
-                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">成交</button>
-                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-red-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">失败</button>
+                                <div class="flex gap-2">
+                                    <button onclick="updateStatus(${i.id}, 'success')" class="w-8 h-8 rounded-full bg-emerald-500 text-white shadow-lg active:scale-75"><i class="fa fa-check text-[10px]"></i></button>
+                                    <button onclick="updateStatus(${i.id}, 'fail')" class="w-8 h-8 rounded-full bg-red-500 text-white shadow-lg active:scale-75"><i class="fa fa-times text-[10px]"></i></button>
                                 </div>
-                            ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-xs tracking-widest uppercase italic">● ${i.status==='success'?'成功':'失败'}</span>`}
-                            <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                                <i onclick="editItem(${i.id})" class="fa fa-pencil text-blue-400 cursor-pointer"></i>
-                                <i onclick="deleteItem(${i.id})" class="fa fa-trash text-gray-300 hover:text-red-500 cursor-pointer"></i>
+                            ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-[9px] uppercase tracking-widest italic">${i.status}</span>`}
+                            <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-all">
+                                <i onclick="editItem(${i.id})" class="fa fa-pencil text-gray-300 hover:text-blue-500 cursor-pointer"></i>
+                                <i onclick="deleteItem(${i.id})" class="fa fa-trash text-gray-200 hover:text-red-500 cursor-pointer"></i>
                             </div>
                         </div>
                     </td>
                 </tr>`).join('');
         }
 
-        async function updateStatus(id, s) {
-            const idx = appData.records.findIndex(r => r.id === id);
-            appData.records[idx].status = s; renderTable(); await saveToCloud();
+        // 5. 导入导出逻辑
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 4);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `交易备份_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
         }
 
-        async function deleteItem(id) {
-            if(confirm('确定永久删除该记录？')) {
-                appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud();
-            }
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (confirm('导入将覆盖云端现有数据，确定吗？')) {
+                        appData = imported;
+                        renderTable();
+                        await saveToCloud();
+                        alert('导入成功！');
+                    }
+                } catch (err) { alert('文件格式错误！'); }
+            };
+            reader.readAsText(file);
         }
 
+        function toggleTools() { document.getElementById('tool-box').classList.toggle('hidden'); }
+        async function updateStatus(id, s) { const idx = appData.records.findIndex(r => r.id === id); appData.records[idx].status = s; renderTable(); await saveToCloud(); }
+        async function deleteItem(id) { if(confirm('确定删除记录？')) { appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud(); } }
+        function openModal() { document.getElementById('modal').classList.remove('hidden'); document.getElementById('f_id').value = ""; document.getElementById('f_date').value = new Date().toISOString().split('T')[0]; onMarketChange(); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); ['f_symbol','f_name','f_price','f_quantity','f_note'].forEach(id => document.getElementById(id).value = ''); }
+        function setQuickFilter(s) { currentStatusFilter = s; ['all', 'success', 'pending'].forEach(c => document.getElementById('card-' + c).className = `p-5 rounded-3xl shadow-sm border transition-all cursor-pointer ${s === c ? 'active-filter-' + c : 'bg-white'}`); renderTable(); }
+        function resetFilter() { document.getElementById('filter-date').value = ""; document.getElementById('filter-market').value = "all"; setQuickFilter('all'); }
+        
         function editItem(id) {
             const r = appData.records.find(r => r.id === id);
             document.getElementById('modal').classList.remove('hidden');
@@ -360,41 +397,6 @@
             document.getElementById('f_quantity').value = r.quantity;
             document.getElementById('f_note').value = r.note;
             onMarketChange();
-        }
-
-        function setQuickFilter(s) {
-            currentStatusFilter = s;
-            ['all', 'success', 'fail', 'pending'].forEach(c => {
-                document.getElementById('card-' + c).className = `bg-white p-4 rounded-2xl shadow-sm cursor-pointer transition-all ${s === c ? 'active-filter-' + c : ''}`;
-            });
-            renderTable();
-        }
-
-        function resetFilter() {
-            document.getElementById('filter-date').value = "";
-            document.getElementById('filter-market').value = "all";
-            setQuickFilter('all');
-        }
-
-        function openModal() {
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('f_id').value = "";
-            document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
-            onMarketChange();
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            ['f_symbol','f_name','f_price','f_quantity','f_note'].forEach(id => document.getElementById(id).value = '');
-        }
-
-        function exportBackup() {
-            const dataStr = JSON.stringify(appData, null, 4);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            const fileName = `交易备份_${new Date().toISOString().split('T')[0]}.json`;
-            let link = document.createElement('a');
-            link.setAttribute('href', dataUri); link.setAttribute('download', fileName);
-            link.click();
         }
     </script>
 </body>
