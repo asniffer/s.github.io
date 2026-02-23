@@ -16,7 +16,6 @@
         #f_symbol.uppercase-input { text-transform: uppercase; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .th-label { color: #1e40af; font-weight: 800; letter-spacing: 0.05em; }
-        /* 欢乐背景：多巴胺渐变 */
         .happy-bg { background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); }
         .happy-light-bg { background: #eff6ff; border: 1px dashed #bfdbfe; }
     </style>
@@ -26,10 +25,10 @@
 
     <div id="lock-screen" class="fixed inset-0 bg-white/95 flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
-            <div class="w-20 h-20 bg-blue-600 rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-8 animate-bounce">
+            <div class="w-20 h-20 bg-blue-600 rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-8">
                 <i class="fa fa-rocket text-white text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-bold mb-8">股票交易助手</h2>
+            <h2 class="text-2xl font-bold mb-8 text-slate-900">股票交易助手</h2>
             <input type="password" id="access-pwd" class="w-full bg-slate-100 rounded-2xl p-5 text-center text-3xl font-black mb-4 border-2 border-transparent focus:border-blue-400" placeholder="PIN" inputmode="numeric">
             <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg active:scale-95 transition-all shadow-lg shadow-blue-200">开启交易大门</button>
             <p id="pwd-error" class="text-red-500 text-sm mt-4 hidden">密码验证失败</p>
@@ -39,7 +38,7 @@
     <div id="main-content" class="hidden opacity-0 transition-opacity duration-500 max-w-5xl mx-auto px-4 py-6">
         <header class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900">股票交易助手</h1>
+                <h1 class="text-2xl font-bold text-slate-900 text-slate-900">股票交易助手</h1>
                 <div class="flex items-center mt-1">
                     <div id="sync-dot" class="w-2 h-2 rounded-full bg-slate-300 mr-2"></div>
                     <span id="sync-status" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">等待连接...</span>
@@ -215,9 +214,16 @@
             calcTotal();
         }
 
+        // 排序规则修复：最近日期在前
         function renderTable() {
             let list = [...appData.records];
-            list.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // 核心排序：降序 (Newest First)
+            list.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateB - dateA;
+            });
 
             const mFilter = document.getElementById('filter-market').value;
             const dFilter = document.getElementById('filter-date').value;
@@ -240,7 +246,7 @@
                     <td class="px-8 py-6">
                         <div class="text-[10px] text-slate-300 font-bold mb-1">${i.date}</div>
                         <div class="flex flex-col">
-                            <span class="text-[14px] text-slate-800 font-medium">${i.symbol}</span>
+                            <span class="text-[14px] text-slate-500 font-medium">${i.symbol}</span>
                             <span class="font-bold text-slate-900 text-[15px]">${i.name}</span>
                         </div>
                         ${i.reason ? `<div class="mt-2 p-2 happy-light-bg rounded-lg text-[11px] text-blue-600 max-w-xs italic">“ ${i.reason} ”</div>` : ''}
@@ -327,7 +333,7 @@
         }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); ['f_symbol','f_name','f_price','f_quantity','f_reason'].forEach(id => document.getElementById(id).value=''); }
         async function updateStatus(id, s) { const idx = appData.records.findIndex(r => r.id === id); appData.records[idx].status = s; renderTable(); await saveToCloud(); }
-        async function deleteItem(id) { if(confirm('确定删除交易计划？')) { appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud(); } }
+        async function deleteItem(id) { if(confirm('确定永久删除该计划？')) { appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud(); } }
         function editItem(id) {
             const r = appData.records.find(r => r.id === id);
             document.getElementById('modal').classList.remove('hidden');
