@@ -14,7 +14,6 @@
         .glass-card { background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
         input, select, textarea { font-size: 16px !important; outline: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* 表头醒目颜色 */
         .th-label { color: #1e40af; font-weight: 800; letter-spacing: 0.05em; }
     </style>
 </head>
@@ -68,15 +67,15 @@
                 <div id="stat-total" class="text-2xl font-black">0</div>
             </div>
             <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-5 rounded-3xl border-b-4 border-transparent cursor-pointer">
-                <div class="text-[10px] text-emerald-500 font-bold mb-1">成功成交</div>
+                <div class="text-[10px] text-emerald-500 font-bold mb-1">成功总计</div>
                 <div id="stat-success" class="text-2xl font-black text-emerald-500">0</div>
             </div>
             <div onclick="setQuickFilter('fail')" id="card-fail" class="bg-white p-5 rounded-3xl border-b-4 border-transparent cursor-pointer">
-                <div class="text-[10px] text-red-400 font-bold mb-1">未成交/失败</div>
-                <div id="stat-fail" class="text-2xl font-black text-red-400">0</div>
+                <div class="text-[10px] text-red-500 font-bold mb-1">失败总计</div>
+                <div id="stat-fail" class="text-2xl font-black text-red-500">0</div>
             </div>
             <div class="bg-slate-900 p-5 rounded-3xl shadow-xl">
-                <div class="text-[10px] text-slate-500 font-bold mb-1">成交规模</div>
+                <div class="text-[10px] text-slate-500 font-bold mb-1">成功金额</div>
                 <div id="stat-amount" class="text-xl font-black text-white truncate">￥0</div>
             </div>
         </div>
@@ -139,7 +138,6 @@
     </div>
 
     <script>
-        // 配置与密钥
         const _ID = '699bba17ae596e708f40f47e'; 
         const _KEY = '$2a$10$6.X9SFXrgyQPaWMEYe5Eeu8G73g36QEs4BKZhH4hm0TS4Wfnd8ElC'; 
         const _PASS = "680901"; 
@@ -147,7 +145,6 @@
         let appData = { records: [] };
         let currentStatusFilter = 'all';
 
-        // 登录逻辑
         function checkPassword() {
             if (document.getElementById('access-pwd').value.trim() === _PASS) {
                 document.getElementById('lock-screen').classList.add('hidden');
@@ -159,7 +156,6 @@
             }
         }
 
-        // 云端状态反馈逻辑
         async function loadFromCloud() {
             updateUIStatus('syncing', '正在连接云端...');
             try {
@@ -194,11 +190,8 @@
             if(type === 'error') { dot.className = "w-2 h-2 rounded-full mr-2 bg-red-500"; statusText.className = "text-[11px] font-bold text-red-500 uppercase tracking-widest"; }
         }
 
-        // 列表渲染逻辑 (增加排序和股票代码排版)
         function renderTable() {
             let list = [...appData.records];
-            
-            // 按日期从近到远排序
             list.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const mFilter = document.getElementById('filter-market').value;
@@ -211,7 +204,6 @@
                 return matchStatus && matchMarket && matchDate;
             });
 
-            // 统计
             document.getElementById('stat-total').innerText = list.length;
             document.getElementById('stat-success').innerText = list.filter(i => i.status === 'success').length;
             document.getElementById('stat-fail').innerText = list.filter(i => i.status === 'fail').length;
@@ -222,7 +214,7 @@
                 <tr class="hover:bg-slate-50 transition-all">
                     <td class="px-8 py-6">
                         <div class="text-[10px] text-slate-300 font-bold mb-1">${i.date}</div>
-                        <div class="font-bold text-slate-900 text-sm">${i.name}</div>
+                        <div class="font-bold text-slate-900 text-base">${i.name}</div>
                         <div class="text-[12px] text-slate-400 font-mono font-bold">${i.symbol}</div>
                     </td>
                     <td class="px-6 py-6 text-center">
@@ -238,10 +230,14 @@
                         <div class="flex flex-col items-center gap-2">
                             ${i.status === 'pending' ? `
                                 <div class="flex gap-2">
-                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[10px] px-3 py-1 rounded-lg font-bold">成果</button>
-                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-slate-200 text-slate-500 text-[10px] px-3 py-1 rounded-lg font-bold">失败</button>
+                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[11px] px-4 py-1.5 rounded-xl font-bold shadow-md shadow-emerald-100 active:scale-90">成功</button>
+                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-red-500 text-white text-[11px] px-4 py-1.5 rounded-xl font-bold shadow-md shadow-red-100 active:scale-90">失败</button>
                                 </div>
-                            ` : `<span class="${i.status==='success'?'text-emerald-400':'text-red-300'} font-black text-[10px] uppercase italic">${i.status==='success'?'SUCCESS':'FAILED'}</span>`}
+                            ` : `
+                                <span class="${i.status==='success'?'text-emerald-500 bg-emerald-50':'text-red-500 bg-red-50'} font-black text-[10px] px-3 py-1 rounded-lg uppercase italic tracking-widest border border-current opacity-70">
+                                    ${i.status==='success'?'SUCCESS':'FAILED'}
+                                </span>
+                            `}
                             <div class="flex gap-4 opacity-20 hover:opacity-100 transition-all mt-1">
                                 <i onclick="editItem(${i.id})" class="fa fa-pencil text-slate-400 cursor-pointer"></i>
                                 <i onclick="deleteItem(${i.id})" class="fa fa-trash text-slate-300 cursor-pointer"></i>
@@ -251,7 +247,6 @@
                 </tr>`).join('');
         }
 
-        // 功能函数
         function onMarketChange() {
             document.getElementById('opt_tag').classList.toggle('hidden', document.getElementById('f_market').value !== "美股期权");
             calcTotal();
@@ -266,7 +261,6 @@
             return total;
         }
 
-        // 日期逻辑：设置为明天
         function getTomorrow() {
             const d = new Date();
             d.setDate(d.getDate() + 1);
@@ -275,6 +269,7 @@
 
         function openModal() {
             document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modalTitle').innerText = "新建交易计划";
             document.getElementById('f_id').value = "";
             document.getElementById('f_date').value = getTomorrow();
             onMarketChange();
