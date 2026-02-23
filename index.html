@@ -15,6 +15,7 @@
         .active-filter-pending { border-bottom: 4px solid #f59e0b !important; background-color: #fffbeb; }
         .btn-active:active { transform: scale(0.95); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        input, select, textarea { font-size: 16px !important; } /* 防止iOS点击输入框缩放 */
     </style>
 </head>
 
@@ -50,23 +51,23 @@
 
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer active-filter-all">
-                <div class="text-gray-400 text-[10px] font-bold uppercase">总计划</div>
+                <div class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">总计划</div>
                 <div id="stat-total" class="text-2xl font-black mt-1">0</div>
             </div>
             <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
-                <div class="text-emerald-500 text-[10px] font-bold uppercase">成功</div>
+                <div class="text-emerald-500 text-[10px] font-bold uppercase tracking-widest">成功</div>
                 <div id="stat-success" class="text-2xl font-black text-emerald-500 mt-1">0</div>
             </div>
             <div onclick="setQuickFilter('fail')" id="card-fail" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
-                <div class="text-red-500 text-[10px] font-bold uppercase">失败</div>
+                <div class="text-red-500 text-[10px] font-bold uppercase tracking-widest">失败</div>
                 <div id="stat-fail" class="text-2xl font-black text-red-500 mt-1">0</div>
             </div>
             <div onclick="setQuickFilter('pending')" id="card-pending" class="bg-white p-4 rounded-2xl shadow-sm cursor-pointer">
-                <div class="text-amber-500 text-[10px] font-bold uppercase">待处理</div>
+                <div class="text-amber-500 text-[10px] font-bold uppercase tracking-widest">待处理</div>
                 <div id="stat-pending" class="text-2xl font-black text-amber-500 mt-1">0</div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-600 col-span-2 md:col-span-1">
-                <div class="text-blue-600 text-[10px] font-bold uppercase">成功总额</div>
+                <div class="text-blue-600 text-[10px] font-bold uppercase tracking-widest">成功总额</div>
                 <div id="stat-amount" class="text-xl font-black text-blue-600 mt-1 truncate">￥0</div>
             </div>
         </div>
@@ -92,8 +93,8 @@
                             <th class="px-6 py-4">日期</th>
                             <th class="px-6 py-4">标的/代码</th>
                             <th class="px-6 py-4">市场/方向</th>
-                            <th class="px-6 py-4">价格x数量</th>
-                            <th class="px-6 py-4">计划金额</th>
+                            <th class="px-6 py-4 text-right">单价/数量</th>
+                            <th class="px-6 py-4 text-right">计划金额</th>
                             <th class="px-6 py-4 text-center">状态操作</th>
                         </tr>
                     </thead>
@@ -104,42 +105,62 @@
     </div>
 
     <div id="modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-8 overflow-y-auto max-h-[90vh] modal-animate">
+        <div class="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-8 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="modalTitle" class="text-xl font-bold text-gray-800">制定计划</h2>
                 <button onclick="closeModal()"><i class="fa fa-times-circle text-2xl text-gray-300"></i></button>
             </div>
             <input type="hidden" id="f_id">
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <select id="f_market" onchange="updateUI()" class="border rounded-2xl p-4 text-sm font-bold bg-gray-50">
-                    <option value="美股">美股</option>
-                    <option value="美股期权">美股期权</option>
-                    <option value="港股">港股</option>
-                    <option value="A股">A股</option>
-                </select>
-                <select id="f_direction" class="border rounded-2xl p-4 text-sm font-bold bg-gray-50">
-                    <option value="买入">买入</option>
-                    <option value="卖出">卖出</option>
-                </select>
-                <input id="f_symbol" type="text" class="border rounded-2xl p-4 text-sm font-mono" placeholder="代码 (如 AAPL)">
-                <input id="f_name" type="text" class="border rounded-2xl p-4 text-sm" placeholder="名称 (如 苹果股票)">
-                <input id="f_date" type="date" class="border rounded-2xl p-4 text-sm">
-                <div class="grid grid-cols-2 gap-2">
-                    <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="border rounded-2xl p-4 text-sm" placeholder="价格">
-                    <input id="f_quantity" type="number" oninput="calcTotal()" class="border rounded-2xl p-4 text-sm" placeholder="数量">
+                <div class="col-span-1">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">市场</label>
+                    <select id="f_market" onchange="updateUI(); handleCodeInput(document.getElementById('f_symbol'))" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50">
+                        <option value="美股">美股</option>
+                        <option value="美股期权">美股期权</option>
+                        <option value="港股">港股</option>
+                        <option value="A股">A股</option>
+                    </select>
+                </div>
+                <div class="col-span-1">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">方向</label>
+                    <select id="f_direction" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50">
+                        <option value="买入">买入</option>
+                        <option value="卖出">卖出</option>
+                    </select>
+                </div>
+                <div class="col-span-1">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">代码</label>
+                    <input id="f_symbol" type="text" oninput="handleCodeInput(this)" class="w-full border rounded-2xl p-4 text-sm font-mono font-bold" placeholder="代码">
+                </div>
+                <div class="col-span-1">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">名称</label>
+                    <input id="f_name" type="text" class="w-full border rounded-2xl p-4 text-sm" placeholder="标的名称">
+                </div>
+                <div class="col-span-2 grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">日期</label>
+                        <input id="f_date" type="date" class="w-full border rounded-xl p-3 text-[10px]">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">单价</label>
+                        <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">数量</label>
+                        <input id="f_quantity" type="number" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold" placeholder="0">
+                    </div>
                 </div>
             </div>
-            <div class="bg-blue-600 rounded-3xl p-6 flex justify-between items-center mb-6 text-white font-bold">
+            <div class="bg-blue-600 rounded-2xl p-5 flex justify-between items-center mb-6 text-white font-bold shadow-lg shadow-blue-100">
                 <div class="text-xs opacity-70 uppercase tracking-widest">预估总额 <span id="opt_tag" class="hidden text-[10px] bg-white/20 px-1 rounded ml-1">x100</span></div>
                 <div id="f_total_display" class="text-2xl font-mono">￥ 0.00</div>
             </div>
-            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="为什么买入/卖出？"></textarea>
+            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="输入您的交易逻辑..."></textarea>
             <button onclick="submitForm()" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg btn-active">保存计划并同步云端</button>
         </div>
     </div>
 
     <script>
-        // ================= 参数注入 =================
         const CONFIG = {
             BIN_ID: '699bba17ae596e708f40f47e', 
             MASTER_KEY: '$2a$10$6.X9SFXrgyQPaWMEYe5Eeu8G73g36QEs4BKZhH4hm0TS4Wfnd8ElC',
@@ -149,13 +170,21 @@
         let appData = { records: [] };
         let currentStatusFilter = 'all';
 
-        // 核心 JS 逻辑
+        // --- 核心逻辑优化：代码输入限制 ---
+        function handleCodeInput(el) {
+            const market = document.getElementById('f_market').value;
+            if (market === '美股' || market === '美股期权') {
+                el.value = el.value.toUpperCase(); // 美股自动转大写
+            } else if (market === 'A股' || market === '港股') {
+                el.value = el.value.replace(/[^\d]/g, ''); // A股港股只允许数字
+            }
+        }
+
         function checkPassword() {
             if(document.getElementById('access-pwd').value === CONFIG.ACCESS_PWD) {
                 document.getElementById('lock-screen').classList.add('hidden');
-                const main = document.getElementById('main-content');
-                main.classList.remove('hidden');
-                setTimeout(() => main.classList.add('opacity-100'), 50);
+                document.getElementById('main-content').classList.remove('hidden');
+                setTimeout(() => document.getElementById('main-content').classList.add('opacity-100'), 50);
                 loadFromCloud();
             } else {
                 document.getElementById('pwd-error').classList.remove('hidden');
@@ -163,7 +192,7 @@
         }
 
         async function loadFromCloud() {
-            updateSyncStatus('syncing', '正在拉取云端数据...');
+            updateSyncStatus('syncing', '正在云端同步...');
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}/latest`, {
                     headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
@@ -172,19 +201,19 @@
                 appData = json.record || { records: [] };
                 renderTable();
                 updateSyncStatus('success', '云端已同步');
-            } catch (e) { updateSyncStatus('error', '同步失败'); }
+            } catch (e) { updateSyncStatus('error', '连接失败'); }
         }
 
         async function saveToCloud() {
-            updateSyncStatus('syncing', '正在推送到云端...');
+            updateSyncStatus('syncing', '保存中...');
             try {
                 await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': CONFIG.MASTER_KEY },
                     body: JSON.stringify(appData)
                 });
-                updateSyncStatus('success', '云端存取成功');
-            } catch (e) { alert('同步失败，请检查网络'); }
+                updateSyncStatus('success', '已云存');
+            } catch (e) { alert('云端存取失败'); }
         }
 
         function updateSyncStatus(type, text) {
@@ -213,7 +242,7 @@
                 date: document.getElementById('f_date').value || new Date().toISOString().split('T')[0],
                 market: document.getElementById('f_market').value,
                 direction: document.getElementById('f_direction').value,
-                symbol: document.getElementById('f_symbol').value.toUpperCase(),
+                symbol: document.getElementById('f_symbol').value,
                 name: document.getElementById('f_name').value || '未命名',
                 price: parseFloat(document.getElementById('f_price').value || 0),
                 quantity: parseFloat(document.getElementById('f_quantity').value || 0),
@@ -228,7 +257,6 @@
             } else {
                 appData.records.unshift(record);
             }
-
             closeModal();
             renderTable();
             await saveToCloud();
@@ -258,8 +286,11 @@
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${i.direction==='买入'?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-600'}">${i.direction}</span>
                         <div class="text-[9px] text-gray-300 mt-1 uppercase font-bold tracking-tighter">${i.market}</div>
                     </td>
-                    <td class="px-6 py-5 text-xs font-bold text-gray-600">${i.price.toFixed(2)} x ${i.quantity}${i.market==='美股期权'?'<span class="text-blue-600 ml-1 italic font-black">x100</span>':''}</td>
-                    <td class="px-6 py-5 font-black text-gray-800">￥${(i.totalAmount||0).toLocaleString()}</td>
+                    <td class="px-6 py-5 text-right text-xs font-bold text-gray-600">
+                        ${i.price.toFixed(3)}<br><span class="text-gray-300 text-[10px]">× ${i.quantity}</span>
+                        ${i.market==='美股期权'?'<span class="text-blue-500 font-black ml-1">x100</span>':''}
+                    </td>
+                    <td class="px-6 py-5 text-right font-black text-gray-800">￥${(i.totalAmount||0).toLocaleString()}</td>
                     <td class="px-6 py-5">
                         <div class="flex flex-col items-center gap-2">
                             ${i.status === 'pending' ? `
@@ -267,7 +298,7 @@
                                     <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">成交</button>
                                     <button onclick="updateStatus(${i.id}, 'fail')" class="bg-red-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">失败</button>
                                 </div>
-                            ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-xs tracking-widest uppercase">● ${i.status==='success'?'成功':'失败'}</span>`}
+                            ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-xs tracking-widest uppercase italic">● ${i.status==='success'?'SUCCESS':'FAILED'}</span>`}
                             <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
                                 <i onclick="editItem(${i.id})" class="fa fa-pencil text-blue-400 cursor-pointer hover:text-blue-600"></i>
                                 <i onclick="deleteItem(${i.id})" class="fa fa-trash text-gray-300 hover:text-red-500 cursor-pointer"></i>
@@ -323,6 +354,7 @@
 
         function openModal() {
             document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modalTitle').innerText = "制定计划";
             document.getElementById('f_id').value = "";
             document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
             updateUI();
@@ -331,6 +363,7 @@
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
             ['f_symbol','f_name','f_price','f_quantity','f_note'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('f_total_display').innerText = '￥ 0.00';
         }
     </script>
 </body>
