@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小G交易助手-Cloud Pro</title>
+    <title>小G交易助手-Security Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
@@ -23,13 +23,13 @@
     <div id="lock-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-gray-100">
             <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
-                <i class="fa fa-lock text-3xl"></i>
+                <i class="fa fa-shield text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-bold mb-2">安全验证</h2>
-            <p class="text-gray-400 text-sm mb-6">请输入您的访问密码</p>
+            <h2 class="text-2xl font-bold mb-2">身份验证</h2>
+            <p class="text-gray-400 text-sm mb-6">请输入您的加密访问密码</p>
             <input type="password" id="access-pwd" class="w-full border-2 border-gray-100 rounded-2xl p-4 mb-4 text-center text-3xl outline-none focus:border-blue-500 transition-all" placeholder="····">
-            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg btn-active">开启助手</button>
-            <p id="pwd-error" class="text-red-500 text-sm mt-4 hidden">密码有误，请重试</p>
+            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg btn-active">验证并解锁</button>
+            <p id="pwd-error" class="text-red-500 text-sm mt-4 hidden">哈希校验失败，请重试</p>
         </div>
     </div>
 
@@ -41,12 +41,17 @@
                 </h1>
                 <div class="flex items-center mt-2 justify-center sm:justify-start">
                     <span id="sync-dot" class="w-2 h-2 rounded-full bg-gray-300 mr-2"></span>
-                    <p class="text-xs text-gray-400 font-medium" id="sync-status">等待验证...</p>
+                    <p class="text-xs text-gray-400 font-medium" id="sync-status">加密连接中...</p>
                 </div>
             </div>
-            <button onclick="openModal()" class="w-full sm:w-auto bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold btn-active shadow-lg shadow-blue-100">
-                <i class="fa fa-plus-circle mr-2"></i>制定新计划
-            </button>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="exportBackup()" class="flex-1 sm:flex-none bg-gray-100 text-gray-600 px-4 py-4 rounded-2xl font-bold btn-active">
+                    <i class="fa fa-download mr-1"></i>备份
+                </button>
+                <button onclick="openModal()" class="flex-[2] sm:flex-none bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold btn-active shadow-lg shadow-blue-100">
+                    <i class="fa fa-plus-circle mr-2"></i>制定新计划
+                </button>
+            </div>
         </header>
 
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
@@ -84,7 +89,7 @@
                         <option value="A股">A股</option>
                     </select>
                 </div>
-                <button onclick="resetFilter()" class="text-xs font-bold text-blue-500">重置</button>
+                <button onclick="resetFilter()" class="text-xs font-bold text-blue-500">重置筛选</button>
             </div>
             <div class="overflow-x-auto no-scrollbar">
                 <table class="w-full text-left min-w-[750px]">
@@ -107,13 +112,13 @@
     <div id="modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-8 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">制定交易计划</h2>
+                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">制定计划</h2>
                 <button onclick="closeModal()"><i class="fa fa-times-circle text-2xl text-gray-300"></i></button>
             </div>
             <input type="hidden" id="f_id">
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">交易市场</label>
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">市场</label>
                     <select id="f_market" onchange="onMarketChange()" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none">
                         <option value="美股">美股</option>
                         <option value="美股期权">美股期权</option>
@@ -122,19 +127,19 @@
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">操作方向</label>
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">方向</label>
                     <select id="f_direction" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none">
                         <option value="买入">买入</option>
                         <option value="卖出">卖出</option>
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">代码 (自动格式化)</label>
-                    <input id="f_symbol" type="text" oninput="validateSymbol(this)" onblur="validateSymbol(this)" class="w-full border rounded-2xl p-4 text-sm font-mono font-bold outline-none focus:border-blue-500" placeholder="请输入代码">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">代码</label>
+                    <input id="f_symbol" type="text" oninput="validateSymbol(this)" onblur="validateSymbol(this)" class="w-full border rounded-2xl p-4 text-sm font-mono font-bold outline-none focus:border-blue-500" placeholder="代码">
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">标的名称</label>
-                    <input id="f_name" type="text" class="w-full border rounded-2xl p-4 text-sm outline-none" placeholder="股票/合约名称">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">名称</label>
+                    <input id="f_name" type="text" class="w-full border rounded-2xl p-4 text-sm outline-none" placeholder="标的名称">
                 </div>
                 <div class="col-span-2 grid grid-cols-3 gap-2">
                     <div>
@@ -155,48 +160,33 @@
                 <div class="text-xs opacity-70 uppercase tracking-widest">预估总额 <span id="opt_tag" class="hidden text-[10px] bg-white/20 px-1 rounded ml-1">x100</span></div>
                 <div id="f_total_display" class="text-2xl font-mono">￥ 0.00</div>
             </div>
-            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="交易理由或备忘..."></textarea>
+            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="逻辑备忘..."></textarea>
             <button onclick="submitForm()" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg btn-active">同步到云端</button>
         </div>
     </div>
 
     <script>
-        const CONFIG = {
+        // ================= 安全配置区 =================
+        const SECURITY = {
+            // 这里存的是你提供的 SHA-256 哈希指纹
+            HASH: '02de3b20d2c1fca685f2596656af613b', 
             BIN_ID: '699bba17ae596e708f40f47e', 
-            MASTER_KEY: '$2a$10$6.X9SFXrgyQPaWMEYe5Eeu8G73g36QEs4BKZhH4hm0TS4Wfnd8ElC',
-            ACCESS_PWD: '680901'
+            KEY: '$2a$10$6.X9SFXrgyQPaWMEYe5Eeu8G73g36QEs4BKZhH4hm0TS4Wfnd8ElC'
         };
 
         let appData = { records: [] };
         let currentStatusFilter = 'all';
 
-        // --- 核心校验函数 ---
-        function validateSymbol(el) {
-            const market = document.getElementById('f_market').value;
-            if (market === '美股' || market === '美股期权') {
-                el.value = el.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); // 仅限大写字母和数字
-            } else {
-                el.value = el.value.replace(/[^\d]/g, ''); // A股港股仅限数字
-            }
-        }
+        // --- 哈希验证核心函数 ---
+        async function checkPassword() {
+            const pwd = document.getElementById('access-pwd').value;
+            const msgBuffer = new TextEncoder().encode(pwd);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-        function onMarketChange() {
-            const el = document.getElementById('f_symbol');
-            const market = document.getElementById('f_market').value;
-            // 切换时根据市场类型改变手机键盘
-            if (market === '美股' || market === '美股期权') {
-                el.setAttribute('type', 'text');
-                el.setAttribute('inputmode', 'text');
-            } else {
-                el.setAttribute('type', 'tel'); // 强制弹出数字键盘
-                el.setAttribute('inputmode', 'numeric');
-            }
-            validateSymbol(el);
-            updateUI();
-        }
-
-        function checkPassword() {
-            if(document.getElementById('access-pwd').value === CONFIG.ACCESS_PWD) {
+            // 修正：对比你提供的指纹
+            if(inputHash === SECURITY.HASH) {
                 document.getElementById('lock-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 setTimeout(() => document.getElementById('main-content').classList.add('opacity-100'), 50);
@@ -206,29 +196,52 @@
             }
         }
 
+        // --- 代码格式化逻辑 ---
+        function validateSymbol(el) {
+            const market = document.getElementById('f_market').value;
+            if (market === '美股' || market === '美股期权') {
+                el.value = el.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); 
+            } else {
+                el.value = el.value.replace(/[^\d]/g, ''); 
+            }
+        }
+
+        function onMarketChange() {
+            const el = document.getElementById('f_symbol');
+            const market = document.getElementById('f_market').value;
+            if (market === '美股' || market === '美股期权') {
+                el.setAttribute('type', 'text'); el.setAttribute('inputmode', 'text');
+            } else {
+                el.setAttribute('type', 'tel'); el.setAttribute('inputmode', 'numeric');
+            }
+            validateSymbol(el);
+            updateUI();
+        }
+
+        // --- 云端同步逻辑 ---
         async function loadFromCloud() {
-            updateSyncStatus('syncing', '正在同步云端...');
+            updateSyncStatus('syncing', '加密读取中...');
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${SECURITY.BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': SECURITY.KEY }
                 });
                 const json = await res.json();
                 appData = json.record || { records: [] };
                 renderTable();
-                updateSyncStatus('success', '同步已完成');
-            } catch (e) { updateSyncStatus('error', '连接断开'); }
+                updateSyncStatus('success', '同步成功');
+            } catch (e) { updateSyncStatus('error', '连接超时'); }
         }
 
         async function saveToCloud() {
             updateSyncStatus('syncing', '保存中...');
             try {
-                await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`, {
+                await fetch(`https://api.jsonbin.io/v3/b/${SECURITY.BIN_ID}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': CONFIG.MASTER_KEY },
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': SECURITY.KEY },
                     body: JSON.stringify(appData)
                 });
-                updateSyncStatus('success', '保存成功');
-            } catch (e) { alert('云端同步失败'); }
+                updateSyncStatus('success', '云存成功');
+            } catch (e) { alert('同步失败'); }
         }
 
         function updateSyncStatus(type, text) {
@@ -237,6 +250,7 @@
             dot.className = "w-2 h-2 rounded-full mr-2 " + (type==='syncing'?'bg-blue-400 animate-pulse':(type==='success'?'bg-emerald-500':'bg-red-500'));
         }
 
+        // --- 核心业务逻辑 ---
         function calcTotal() {
             const p = parseFloat(document.getElementById('f_price').value) || 0;
             const q = parseFloat(document.getElementById('f_quantity').value) || 0;
@@ -258,7 +272,7 @@
                 market: document.getElementById('f_market').value,
                 direction: document.getElementById('f_direction').value,
                 symbol: document.getElementById('f_symbol').value,
-                name: document.getElementById('f_name').value || '未命名标的',
+                name: document.getElementById('f_name').value || '未命名',
                 price: parseFloat(document.getElementById('f_price').value || 0),
                 quantity: parseFloat(document.getElementById('f_quantity').value || 0),
                 note: document.getElementById('f_note').value || '',
@@ -303,7 +317,6 @@
                     </td>
                     <td class="px-6 py-5 text-right text-xs font-bold text-gray-600">
                         ${i.price.toFixed(3)}<br><span class="text-gray-300 text-[10px]">× ${i.quantity}</span>
-                        ${i.market==='美股期权'?'<span class="text-blue-500 font-black ml-1">x100</span>':''}
                     </td>
                     <td class="px-6 py-5 text-right font-black text-gray-800">￥${(i.totalAmount||0).toLocaleString()}</td>
                     <td class="px-6 py-5">
@@ -315,7 +328,7 @@
                                 </div>
                             ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-xs tracking-widest uppercase italic">● ${i.status==='success'?'成功':'失败'}</span>`}
                             <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                                <i onclick="editItem(${i.id})" class="fa fa-pencil text-blue-400 cursor-pointer hover:text-blue-600"></i>
+                                <i onclick="editItem(${i.id})" class="fa fa-pencil text-blue-400 cursor-pointer"></i>
                                 <i onclick="deleteItem(${i.id})" class="fa fa-trash text-gray-300 hover:text-red-500 cursor-pointer"></i>
                             </div>
                         </div>
@@ -325,16 +338,12 @@
 
         async function updateStatus(id, s) {
             const idx = appData.records.findIndex(r => r.id === id);
-            appData.records[idx].status = s;
-            renderTable();
-            await saveToCloud();
+            appData.records[idx].status = s; renderTable(); await saveToCloud();
         }
 
         async function deleteItem(id) {
-            if(confirm('确定永久删除该条计划？')) {
-                appData.records = appData.records.filter(r => r.id !== id);
-                renderTable();
-                await saveToCloud();
+            if(confirm('确定永久删除该记录？')) {
+                appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud();
             }
         }
 
@@ -377,6 +386,15 @@
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
             ['f_symbol','f_name','f_price','f_quantity','f_note'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        function exportBackup() {
+            const dataStr = JSON.stringify(appData, null, 4);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const fileName = `交易备份_${new Date().toISOString().split('T')[0]}.json`;
+            let link = document.createElement('a');
+            link.setAttribute('href', dataUri); link.setAttribute('download', fileName);
+            link.click();
         }
     </script>
 </body>
