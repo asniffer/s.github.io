@@ -15,7 +15,7 @@
         .active-filter-pending { border-bottom: 4px solid #f59e0b !important; background-color: #fffbeb; }
         .btn-active:active { transform: scale(0.95); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        input, select, textarea { font-size: 16px !important; } /* 防止iOS点击输入框缩放 */
+        input, select, textarea { font-size: 16px !important; } 
     </style>
 </head>
 
@@ -84,7 +84,7 @@
                         <option value="A股">A股</option>
                     </select>
                 </div>
-                <button onclick="resetFilter()" class="text-xs font-bold text-blue-500">清空筛选</button>
+                <button onclick="resetFilter()" class="text-xs font-bold text-blue-500">重置</button>
             </div>
             <div class="overflow-x-auto no-scrollbar">
                 <table class="w-full text-left min-w-[750px]">
@@ -92,7 +92,7 @@
                         <tr>
                             <th class="px-6 py-4">日期</th>
                             <th class="px-6 py-4">标的/代码</th>
-                            <th class="px-6 py-4">市场/方向</th>
+                            <th class="px-6 py-4">方向/市场</th>
                             <th class="px-6 py-4 text-right">单价/数量</th>
                             <th class="px-6 py-4 text-right">计划金额</th>
                             <th class="px-6 py-4 text-center">状态操作</th>
@@ -107,14 +107,14 @@
     <div id="modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-8 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">制定计划</h2>
+                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">制定交易计划</h2>
                 <button onclick="closeModal()"><i class="fa fa-times-circle text-2xl text-gray-300"></i></button>
             </div>
             <input type="hidden" id="f_id">
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">市场</label>
-                    <select id="f_market" onchange="updateUI(); handleCodeInput(document.getElementById('f_symbol'))" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">交易市场</label>
+                    <select id="f_market" onchange="onMarketChange()" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none">
                         <option value="美股">美股</option>
                         <option value="美股期权">美股期权</option>
                         <option value="港股">港股</option>
@@ -122,41 +122,41 @@
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">方向</label>
-                    <select id="f_direction" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">操作方向</label>
+                    <select id="f_direction" class="w-full border rounded-2xl p-4 text-sm font-bold bg-gray-50 outline-none">
                         <option value="买入">买入</option>
                         <option value="卖出">卖出</option>
                     </select>
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">代码</label>
-                    <input id="f_symbol" type="text" oninput="handleCodeInput(this)" class="w-full border rounded-2xl p-4 text-sm font-mono font-bold" placeholder="代码">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">代码 (自动格式化)</label>
+                    <input id="f_symbol" type="text" oninput="validateSymbol(this)" onblur="validateSymbol(this)" class="w-full border rounded-2xl p-4 text-sm font-mono font-bold outline-none focus:border-blue-500" placeholder="请输入代码">
                 </div>
                 <div class="col-span-1">
-                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">名称</label>
-                    <input id="f_name" type="text" class="w-full border rounded-2xl p-4 text-sm" placeholder="标的名称">
+                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">标的名称</label>
+                    <input id="f_name" type="text" class="w-full border rounded-2xl p-4 text-sm outline-none" placeholder="股票/合约名称">
                 </div>
                 <div class="col-span-2 grid grid-cols-3 gap-2">
                     <div>
                         <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">日期</label>
-                        <input id="f_date" type="date" class="w-full border rounded-xl p-3 text-[10px]">
+                        <input id="f_date" type="date" class="w-full border rounded-xl p-3 text-[10px] outline-none">
                     </div>
                     <div>
                         <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">单价</label>
-                        <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold" placeholder="0.00">
+                        <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold outline-none" placeholder="0.00">
                     </div>
                     <div>
                         <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">数量</label>
-                        <input id="f_quantity" type="number" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold" placeholder="0">
+                        <input id="f_quantity" type="number" oninput="calcTotal()" class="w-full border rounded-xl p-3 text-sm font-bold outline-none" placeholder="0">
                     </div>
                 </div>
             </div>
-            <div class="bg-blue-600 rounded-2xl p-5 flex justify-between items-center mb-6 text-white font-bold shadow-lg shadow-blue-100">
+            <div class="bg-blue-600 rounded-3xl p-6 flex justify-between items-center mb-6 text-white font-bold shadow-lg shadow-blue-100">
                 <div class="text-xs opacity-70 uppercase tracking-widest">预估总额 <span id="opt_tag" class="hidden text-[10px] bg-white/20 px-1 rounded ml-1">x100</span></div>
                 <div id="f_total_display" class="text-2xl font-mono">￥ 0.00</div>
             </div>
-            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="输入您的交易逻辑..."></textarea>
-            <button onclick="submitForm()" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg btn-active">保存计划并同步云端</button>
+            <textarea id="f_note" class="w-full border rounded-2xl p-4 h-24 text-sm mb-6 bg-gray-50 outline-none" placeholder="交易理由或备忘..."></textarea>
+            <button onclick="submitForm()" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg btn-active">同步到云端</button>
         </div>
     </div>
 
@@ -170,14 +170,29 @@
         let appData = { records: [] };
         let currentStatusFilter = 'all';
 
-        // --- 核心逻辑优化：代码输入限制 ---
-        function handleCodeInput(el) {
+        // --- 核心校验函数 ---
+        function validateSymbol(el) {
             const market = document.getElementById('f_market').value;
             if (market === '美股' || market === '美股期权') {
-                el.value = el.value.toUpperCase(); // 美股自动转大写
-            } else if (market === 'A股' || market === '港股') {
-                el.value = el.value.replace(/[^\d]/g, ''); // A股港股只允许数字
+                el.value = el.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); // 仅限大写字母和数字
+            } else {
+                el.value = el.value.replace(/[^\d]/g, ''); // A股港股仅限数字
             }
+        }
+
+        function onMarketChange() {
+            const el = document.getElementById('f_symbol');
+            const market = document.getElementById('f_market').value;
+            // 切换时根据市场类型改变手机键盘
+            if (market === '美股' || market === '美股期权') {
+                el.setAttribute('type', 'text');
+                el.setAttribute('inputmode', 'text');
+            } else {
+                el.setAttribute('type', 'tel'); // 强制弹出数字键盘
+                el.setAttribute('inputmode', 'numeric');
+            }
+            validateSymbol(el);
+            updateUI();
         }
 
         function checkPassword() {
@@ -192,7 +207,7 @@
         }
 
         async function loadFromCloud() {
-            updateSyncStatus('syncing', '正在云端同步...');
+            updateSyncStatus('syncing', '正在同步云端...');
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}/latest`, {
                     headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
@@ -200,8 +215,8 @@
                 const json = await res.json();
                 appData = json.record || { records: [] };
                 renderTable();
-                updateSyncStatus('success', '云端已同步');
-            } catch (e) { updateSyncStatus('error', '连接失败'); }
+                updateSyncStatus('success', '同步已完成');
+            } catch (e) { updateSyncStatus('error', '连接断开'); }
         }
 
         async function saveToCloud() {
@@ -212,8 +227,8 @@
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': CONFIG.MASTER_KEY },
                     body: JSON.stringify(appData)
                 });
-                updateSyncStatus('success', '已云存');
-            } catch (e) { alert('云端存取失败'); }
+                updateSyncStatus('success', '保存成功');
+            } catch (e) { alert('云端同步失败'); }
         }
 
         function updateSyncStatus(type, text) {
@@ -243,7 +258,7 @@
                 market: document.getElementById('f_market').value,
                 direction: document.getElementById('f_direction').value,
                 symbol: document.getElementById('f_symbol').value,
-                name: document.getElementById('f_name').value || '未命名',
+                name: document.getElementById('f_name').value || '未命名标的',
                 price: parseFloat(document.getElementById('f_price').value || 0),
                 quantity: parseFloat(document.getElementById('f_quantity').value || 0),
                 note: document.getElementById('f_note').value || '',
@@ -298,7 +313,7 @@
                                     <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">成交</button>
                                     <button onclick="updateStatus(${i.id}, 'fail')" class="bg-red-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm active:scale-95">失败</button>
                                 </div>
-                            ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-xs tracking-widest uppercase italic">● ${i.status==='success'?'SUCCESS':'FAILED'}</span>`}
+                            ` : `<span class="${i.status==='success'?'text-emerald-500':'text-red-500'} font-black text-xs tracking-widest uppercase italic">● ${i.status==='success'?'成功':'失败'}</span>`}
                             <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity mt-1">
                                 <i onclick="editItem(${i.id})" class="fa fa-pencil text-blue-400 cursor-pointer hover:text-blue-600"></i>
                                 <i onclick="deleteItem(${i.id})" class="fa fa-trash text-gray-300 hover:text-red-500 cursor-pointer"></i>
@@ -316,7 +331,7 @@
         }
 
         async function deleteItem(id) {
-            if(confirm('确定删除此交易计划？')) {
+            if(confirm('确定永久删除该条计划？')) {
                 appData.records = appData.records.filter(r => r.id !== id);
                 renderTable();
                 await saveToCloud();
@@ -335,7 +350,7 @@
             document.getElementById('f_price').value = r.price;
             document.getElementById('f_quantity').value = r.quantity;
             document.getElementById('f_note').value = r.note;
-            updateUI();
+            onMarketChange();
         }
 
         function setQuickFilter(s) {
@@ -354,16 +369,14 @@
 
         function openModal() {
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modalTitle').innerText = "制定计划";
             document.getElementById('f_id').value = "";
             document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
-            updateUI();
+            onMarketChange();
         }
 
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
             ['f_symbol','f_name','f_price','f_quantity','f_note'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('f_total_display').innerText = '￥ 0.00';
         }
     </script>
 </body>
