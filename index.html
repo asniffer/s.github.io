@@ -38,7 +38,7 @@
                 <h1 class="text-2xl font-bold text-slate-900">股票交易助手</h1>
                 <div class="flex items-center mt-1">
                     <div id="sync-dot" class="w-2 h-2 rounded-full bg-slate-300 mr-2"></div>
-                    <span id="sync-status" class="text-[11px] font-bold text-slate-400 uppercase">等待连接...</span>
+                    <span id="sync-status" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">等待连接...</span>
                 </div>
             </div>
             <button onclick="openModal()" class="h-11 px-5 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-100 active:scale-90 flex items-center">
@@ -47,7 +47,7 @@
         </header>
 
         <div class="grid grid-cols-2 gap-3 mb-6">
-            <div class="bg-white p-3 rounded-xl border border-slate-200">
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">市场筛选</label>
                 <select id="filter-market" onchange="renderTable()" class="w-full bg-transparent font-bold text-sm">
                     <option value="all">全部市场</option>
@@ -55,28 +55,28 @@
                     <option value="港股">港股</option><option value="A股">A股</option>
                 </select>
             </div>
-            <div class="bg-white p-3 rounded-xl border border-slate-200">
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">日期筛选</label>
                 <input type="date" id="filter-date" onchange="renderTable()" class="w-full bg-transparent font-bold text-sm">
             </div>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-5 rounded-3xl border-b-4 border-blue-600 cursor-pointer">
-                <div class="text-[10px] text-slate-400 font-bold mb-1">总计</div>
+            <div onclick="setQuickFilter('all')" id="card-all" class="bg-white p-5 rounded-3xl border-b-4 border-blue-600 cursor-pointer shadow-sm">
+                <div class="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest">总计</div>
                 <div id="stat-total" class="text-2xl font-black">0</div>
             </div>
-            <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-5 rounded-3xl border-b-4 border-transparent cursor-pointer">
-                <div class="text-[10px] text-emerald-500 font-bold mb-1">成功总计</div>
+            <div onclick="setQuickFilter('success')" id="card-success" class="bg-white p-5 rounded-3xl border-b-4 border-transparent cursor-pointer shadow-sm">
+                <div class="text-[10px] text-emerald-500 font-bold mb-1 uppercase tracking-widest">成功交易</div>
                 <div id="stat-success" class="text-2xl font-black text-emerald-500">0</div>
             </div>
-            <div onclick="setQuickFilter('fail')" id="card-fail" class="bg-white p-5 rounded-3xl border-b-4 border-transparent cursor-pointer">
-                <div class="text-[10px] text-red-500 font-bold mb-1">失败总计</div>
+            <div onclick="setQuickFilter('fail')" id="card-fail" class="bg-white p-5 rounded-3xl border-b-4 border-transparent cursor-pointer shadow-sm">
+                <div class="text-[10px] text-red-500 font-bold mb-1 uppercase tracking-widest">失败/取消</div>
                 <div id="stat-fail" class="text-2xl font-black text-red-500">0</div>
             </div>
             <div class="bg-slate-900 p-5 rounded-3xl shadow-xl">
-                <div class="text-[10px] text-slate-500 font-bold mb-1">成功金额</div>
-                <div id="stat-amount" class="text-xl font-black text-white truncate">￥0</div>
+                <div class="text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-widest">成功规模</div>
+                <div id="stat-amount" class="text-xl font-black text-white truncate tracking-tighter">￥0</div>
             </div>
         </div>
 
@@ -98,7 +98,7 @@
         </div>
         
         <div class="mt-8 text-center">
-            <button onclick="exportData()" class="text-slate-300 text-[10px] font-bold uppercase tracking-widest hover:text-blue-500">导出数据备份</button>
+            <button onclick="exportData()" class="text-slate-300 text-[10px] font-bold uppercase tracking-widest hover:text-blue-500">导出 Json 数据备份</button>
         </div>
     </div>
 
@@ -121,19 +121,19 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <input id="f_name" type="text" class="bg-slate-50 p-4 rounded-2xl font-bold" placeholder="标的名称">
-                    <input id="f_symbol" type="text" oninput="this.value = this.value.toUpperCase()" class="bg-slate-50 p-4 rounded-2xl font-black font-mono" placeholder="股票代码">
+                    <input id="f_symbol" type="text" oninput="validateSymbol(this)" class="bg-slate-50 p-4 rounded-2xl font-normal text-slate-800" placeholder="股票代码">
                 </div>
                 <div class="grid grid-cols-3 gap-3">
                     <input id="f_date" type="date" class="bg-slate-50 p-4 rounded-2xl text-[10px] font-bold">
                     <input id="f_price" type="number" step="0.0001" oninput="calcTotal()" class="bg-slate-50 p-4 rounded-2xl font-bold" placeholder="价格">
                     <input id="f_quantity" type="number" oninput="calcTotal()" class="bg-slate-50 p-4 rounded-2xl font-bold" placeholder="数量">
                 </div>
-                <div class="bg-slate-900 p-6 rounded-2xl flex justify-between items-center">
-                    <span class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">预估成交 <span id="opt_tag" class="hidden text-blue-500 ml-1">(x100)</span></span>
+                <div class="bg-slate-900 p-6 rounded-2xl flex justify-between items-center shadow-lg">
+                    <span class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">预估成交额 <span id="opt_tag" class="hidden text-blue-500 ml-1">(x100)</span></span>
                     <span id="f_total_display" class="text-blue-400 font-mono font-black text-xl">￥ 0.00</span>
                 </div>
             </div>
-            <button onclick="submitForm()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-100">同步至云端</button>
+            <button onclick="submitForm()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 active:scale-95 transition-all">同步至云端</button>
         </div>
     </div>
 
@@ -145,6 +145,7 @@
         let appData = { records: [] };
         let currentStatusFilter = 'all';
 
+        // 核心登录
         function checkPassword() {
             if (document.getElementById('access-pwd').value.trim() === _PASS) {
                 document.getElementById('lock-screen').classList.add('hidden');
@@ -156,8 +157,9 @@
             }
         }
 
+        // 云端同步逻辑
         async function loadFromCloud() {
-            updateUIStatus('syncing', '正在连接云端...');
+            updateUIStatus('syncing', '连接中...');
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${_ID}/latest`, {
                     headers: { 'X-Master-Key': _KEY }
@@ -170,7 +172,7 @@
         }
 
         async function saveToCloud() {
-            updateUIStatus('syncing', '正在更新...');
+            updateUIStatus('syncing', '同步中...');
             try {
                 await fetch(`https://api.jsonbin.io/v3/b/${_ID}`, {
                     method: 'PUT',
@@ -178,7 +180,7 @@
                     body: JSON.stringify(appData)
                 });
                 updateUIStatus('success', '更新成功');
-            } catch (e) { updateUIStatus('error', '同步失败'); }
+            } catch (e) { updateUIStatus('error', '更新失败'); }
         }
 
         function updateUIStatus(type, text) {
@@ -188,6 +190,18 @@
             if(type === 'syncing') { dot.className = "w-2 h-2 rounded-full mr-2 bg-blue-400 animate-pulse"; statusText.className = "text-[11px] font-bold text-blue-400 uppercase tracking-widest"; }
             if(type === 'success') { dot.className = "w-2 h-2 rounded-full mr-2 bg-emerald-500"; statusText.className = "text-[11px] font-bold text-emerald-500 uppercase tracking-widest"; }
             if(type === 'error') { dot.className = "w-2 h-2 rounded-full mr-2 bg-red-500"; statusText.className = "text-[11px] font-bold text-red-500 uppercase tracking-widest"; }
+        }
+
+        // 股票代码输入限制逻辑
+        function validateSymbol(el) {
+            const market = document.getElementById('f_market').value;
+            if (market === 'A股' || market === '港股') {
+                el.value = el.value.replace(/[^\d]/g, ''); // 只能输入数字
+                el.inputMode = 'numeric';
+            } else {
+                el.value = el.value.toUpperCase(); // 美股自动转大写
+                el.inputMode = 'text';
+            }
         }
 
         function renderTable() {
@@ -211,11 +225,11 @@
             document.getElementById('stat-amount').innerText = '￥' + Math.floor(totalAmt).toLocaleString();
 
             document.getElementById('dataTable').innerHTML = filtered.map(i => `
-                <tr class="hover:bg-slate-50 transition-all">
+                <tr class="hover:bg-slate-50 transition-all group">
                     <td class="px-8 py-6">
                         <div class="text-[10px] text-slate-300 font-bold mb-1">${i.date}</div>
-                        <div class="font-bold text-slate-900 text-base">${i.name}</div>
-                        <div class="text-[12px] text-slate-400 font-mono font-bold">${i.symbol}</div>
+                        <div class="font-bold text-slate-900 text-[15px]">${i.name}</div>
+                        <div class="text-[13px] text-slate-500">${i.symbol}</div>
                     </td>
                     <td class="px-6 py-6 text-center">
                         <span class="text-[10px] font-black px-2 py-0.5 rounded ${i.direction==='买入'?'text-red-500 bg-red-50':'text-emerald-500 bg-emerald-50'}">${i.direction}</span>
@@ -230,25 +244,30 @@
                         <div class="flex flex-col items-center gap-2">
                             ${i.status === 'pending' ? `
                                 <div class="flex gap-2">
-                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[11px] px-4 py-1.5 rounded-xl font-bold shadow-md shadow-emerald-100 active:scale-90">成功</button>
-                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-red-500 text-white text-[11px] px-4 py-1.5 rounded-xl font-bold shadow-md shadow-red-100 active:scale-90">失败</button>
+                                    <button onclick="updateStatus(${i.id}, 'success')" class="bg-emerald-500 text-white text-[11px] px-4 py-1.5 rounded-xl font-bold active:scale-90 shadow-md shadow-emerald-50">成功</button>
+                                    <button onclick="updateStatus(${i.id}, 'fail')" class="bg-red-500 text-white text-[11px] px-4 py-1.5 rounded-xl font-bold active:scale-90 shadow-md shadow-red-50">失败</button>
                                 </div>
                             ` : `
-                                <span class="${i.status==='success'?'text-emerald-500 bg-emerald-50':'text-red-500 bg-red-50'} font-black text-[10px] px-3 py-1 rounded-lg uppercase italic tracking-widest border border-current opacity-70">
+                                <span class="${i.status==='success'?'text-emerald-500 bg-emerald-50':'text-red-400 bg-red-50'} font-black text-[10px] px-3 py-1 rounded-lg uppercase tracking-widest border border-current opacity-70">
                                     ${i.status==='success'?'SUCCESS':'FAILED'}
                                 </span>
                             `}
-                            <div class="flex gap-4 opacity-20 hover:opacity-100 transition-all mt-1">
-                                <i onclick="editItem(${i.id})" class="fa fa-pencil text-slate-400 cursor-pointer"></i>
-                                <i onclick="deleteItem(${i.id})" class="fa fa-trash text-slate-300 cursor-pointer"></i>
+                            <div class="flex gap-4 opacity-0 group-hover:opacity-100 transition-all mt-1">
+                                <i onclick="editItem(${i.id})" class="fa fa-pencil text-slate-300 hover:text-blue-500 cursor-pointer"></i>
+                                <i onclick="deleteItem(${i.id})" class="fa fa-trash text-slate-200 hover:text-red-500 cursor-pointer"></i>
                             </div>
                         </div>
                     </td>
                 </tr>`).join('');
         }
 
+        // 辅助逻辑
         function onMarketChange() {
-            document.getElementById('opt_tag').classList.toggle('hidden', document.getElementById('f_market').value !== "美股期权");
+            const m = document.getElementById('f_market').value;
+            document.getElementById('opt_tag').classList.toggle('hidden', m !== "美股期权");
+            const symInput = document.getElementById('f_symbol');
+            symInput.value = ""; // 切换市场清空代码，防止校验冲突
+            symInput.placeholder = (m === 'A股' || m === '港股') ? "仅数字" : "股票代码";
             calcTotal();
         }
 
@@ -269,7 +288,6 @@
 
         function openModal() {
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modalTitle').innerText = "新建交易计划";
             document.getElementById('f_id').value = "";
             document.getElementById('f_date').value = getTomorrow();
             onMarketChange();
@@ -303,13 +321,12 @@
         }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); ['f_symbol','f_name','f_price','f_quantity'].forEach(id => document.getElementById(id).value=''); }
         async function updateStatus(id, s) { const idx = appData.records.findIndex(r => r.id === id); appData.records[idx].status = s; renderTable(); await saveToCloud(); }
-        async function deleteItem(id) { if(confirm('确定删除？')) { appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud(); } }
+        async function deleteItem(id) { if(confirm('确定永久删除该记录？')) { appData.records = appData.records.filter(r => r.id !== id); renderTable(); await saveToCloud(); } }
         function editItem(id) {
             const r = appData.records.find(r => r.id === id);
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modalTitle').innerText = "修改计划";
             ['id','market','direction','symbol','name','date','price','quantity'].forEach(key => document.getElementById('f_'+key).value = r[key]);
-            onMarketChange();
+            calcTotal();
         }
         function exportData() {
             const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
